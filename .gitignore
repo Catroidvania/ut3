@@ -1,0 +1,5 @@
+# a gitignore file
+# catroidvania 27 12 22
+
+.DS_Store
+*.o
