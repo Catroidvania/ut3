@@ -16,7 +16,7 @@ int main() {
 	char menu, strat, first;
 	char input[4];
 
-	int run = 1, state = 1, firstturn = 1;
+	int run = 1, state = 1;
 	
 	initBoard(&game);
 	game.turn = 0;
@@ -27,7 +27,7 @@ int main() {
 	emptyCoord(&cpu);
 
 	while (run) {
-		printf("\033[2J\033[;H");
+		printf("%c[2J%c[;H", ESC, ESC);
 
 		if (state == 1) {
 			printf("\nWhat would you like to do?:\n");
@@ -83,24 +83,19 @@ int main() {
 			} else {
 				printf("Player turn! ");
 			}
-			
-			if (!firstturn) {
-				printf("Previous move: ");
+		
+			printf("Previous move: ");
 
-				if ((game.turn) && (move.Mx >= 0 && move.My >= 0)) {	
-					printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
-										 (char)move.mx + 97, move.my + 1);
-				} else if (cpu.Mx >= 0 && cpu.My >= 0) {
-					printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
-										 (char)cpu.mx + 97, cpu.my + 1);
-				} else {
-					printf("Scored!\n");
-				}
+			if ((game.turn) && (move.Mx >= 0 && move.My >= 0)) {	
+				printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
+									 (char)move.mx + 97, move.my + 1);
+			} else if (cpu.Mx >= 0 && cpu.My >= 0) {
+				printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
+									 (char)cpu.mx + 97, cpu.my + 1);
 			} else {
-				printf("\n");
-				firstturn = 0;
+				printf("i forgor lol\n");
 			}
-			
+		
 			if (game.turn) {
 				if (strat == 'r') {
 					cpu = randomStrat(move, game);

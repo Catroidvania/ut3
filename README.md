@@ -10,17 +10,63 @@ _made by catroidvania_
 
 ## building
 
-ensure you have all the above listed dependancies installed!
+ensure you have all the listed dependancies installed or placed in `/deps/`
 
-open up your command line of choice and change directories into ut3
+### windows
 
-simply run `make` and if all goes well the ut3 binary should be in
+to build on windows you will need either `minGW32` or `minGW-w64` (for
 
-the `./build/` directory!
+32bit and 64bit computers respectively) installed. 
 
-just move directories into there and do `ut3` or `./ut3` if youre on
+then change directories into `/ut3/` and run
 
-macos or linux!
+```
+mingw32-make
+```
+
+if all works then the executable will be in the `/build/` directory
+
+and you can run it with
+
+```
+ut3
+```
+
+### linux / macos
+
+building on unix requires gnu `make` utility as well as `gcc` or another
+
+valid c compiler (you will need to chang the `CC` variable in the Makefile).
+
+change into the `/ut3/` directory and run
+
+```
+make
+```
+
+and then you should find the `ut3` executable in the `build` directory.
+
+run it with
+
+```
+./ut3
+```
+
+### ew object files
+
+you can also `make` the `clean` target to remove the object files
+
+which would look soemthing like this
+
+```
+mingw32-make clean
+```
+
+or for unix
+
+```
+make clean
+```
 
 ## finally
 

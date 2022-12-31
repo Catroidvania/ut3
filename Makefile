@@ -9,11 +9,9 @@ OBJ = $(patsubst %,./$(SRCDIR)/%,$(_OBJ))
 FINAL = ut3
 
 all : $(OBJ)
-	@echo "Linking object files..."
-	@mkdir -p $(BUILDDIR)
-	@# this method of changing directories feels quite ugly ://
+	@echo "Building..."
 	@cd $(BUILDDIR) && $(CC) -o $(FINAL) $(subst $(SRCDIR),../$(SRCDIR),$^)
-	@echo "Files linked!"
+	@echo "Build complete!"
 
 %.o : %.c
 	@cd $(SRCDIR) && $(CC) -c $(subst $(SRCDIR)/,,$<)
