@@ -20,7 +20,7 @@ the `./build/` directory!
 
 just move directories into there and do `ut3` or `./ut3` if youre on
 
-macos or linux.
+macos or linux!
 
 ## finally
 
