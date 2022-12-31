@@ -9,13 +9,169 @@ version 1.0
 #include "board.h"
 #include "main.h"
 
-void drawBuffer(int width, int height, char contents[height][width]) {
-	int row, column;
+Coord coordToBoardIndex(char coord[4]) {
+	Coord c;
 
-	for (row = 1; row <= height; row++) {
-		for (column = 0; column < width; column++) {
-			printf("%c", contents[row-1][column]);
-		}
-		printf("\n");
-	}
+	c.Mx = ((int)coord[0] - 97);
+	c.My = ((int)coord[1] - 49);
+	c.mx = ((int)coord[2] - 97);
+	c.my = ((int)coord[3] - 49);
+
+	return c;
 }
+
+int validMove(Coord c, Coord lc, Game g) {
+	if (c.Mx < 0 || c.Mx > 2 ||
+		c.My < 0 || c.My > 2 ||
+		c.mx < 0 || c.mx > 2 ||
+		c.my < 0 || c.my > 2) {
+		return 0;
+	}
+
+	if (g.board[c.Mx][c.My].Minor[c.mx][c.my] != BOARDEMPTY) {
+		return 0;
+	} else if (c.Mx != lc.mx || c.My != lc.my) {
+		if (lc.mx < 0 || lc.my < 0) {
+			return 1;
+		}
+		return 0;
+	}
+
+	return 1;
+}
+
+int fillScored(Game *g) {
+	int majorx, majory; 
+	int scored = 0;
+	char tile;
+
+	for (majorx = 0; majorx < 3; majorx++) {
+	for (majory = 0; majory < 3; majory++) {
+		tile = scorePositions(g->board[majorx][majory]);
+		if (tile != BOARDEMPTY) {
+			fillMajor(&g->board[majorx][majory], tile);
+			scored = 1;
+		}
+	}}
+
+	return scored;
+}
+
+char majorScored(Major m) {
+	int minorx, minory;
+	char c = m.Minor[0][0];
+		
+	for (minorx = 0; minorx < 3; minorx++) {
+	for (minory = 0; minory < 3; minory++) { 
+		if (m.Minor[minorx][minory] != c) {
+			return BOARDEMPTY;
+		}
+	}}
+
+	return c;
+}
+
+char gameWon(Game g) {
+	Major m;
+	int x, y;
+
+	for (x = 0; x < 3; x++) {
+	for (y = 0; y < 3; y++) {
+		m.Minor[x][y] = majorScored(g.board[x][y]);
+	}}
+
+	return scorePositions(m);
+	
+}
+
+char scorePositions(Major m) {
+	int i;
+
+	/*
+	must be a better way to loop over all this
+	
+	horizontals
+	*/
+	for (i = 0; i < 3; i++) {
+		if (m.Minor[i][0] == m.Minor[i][1] && m.Minor[i][0] == m.Minor[i][2]) {
+			return m.Minor[i][0];
+		}
+	}
+	/*
+	verticals
+	*/
+	for (i = 0; i < 3; i++) {
+		if (m.Minor[0][i] == m.Minor[1][i] && m.Minor[0][i] == m.Minor[2][i]) {
+			return m.Minor[0][i];
+		}
+	}
+	/*
+	diagonals
+	*/
+	if ((m.Minor[0][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[2][2]) ||
+		(m.Minor[2][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[0][2])) {
+		return m.Minor[1][1];
+	}
+
+	return BOARDEMPTY;
+}
+
+void drawBoard(Game g) {
+	int majorx, majory, minorx, minory;
+
+	printf(" _________________________ \n");
+	printf("|                         |\n");
+
+	for (majory = 2; majory >= 0; majory--) {
+	for (minory = 2; minory >= 0; minory--) {
+		if (minory == 1) {
+			printf("%d %d  ", majory + 1, minory + 1);
+		} else {
+			printf("| %d  ", minory + 1);
+		}
+		for (majorx = 0; majorx < 3; majorx++) {
+		for (minorx = 0; minorx < 3; minorx++) {
+			printf("%c ", g.board[majory][majorx].Minor[minory][minorx]);
+		}
+			printf(" ");
+		}
+		printf("|\n");
+	}
+		printf("|                         |\n");
+	}
+
+	printf("| @  a b c  a b c  a b c  |\n");
+	printf("|______A______B______C____|\n");
+}
+
+void initBoard(Game *g) {
+	int majorx, majory, minorx, minory;
+
+	for (majory = 0; majory < 3; majory++) {
+	for (majorx = 0; majorx < 3; majorx++) {
+	for (minory = 0; minory < 3; minory++) {
+	for (minorx = 0; minorx < 3; minorx++) {
+		g->board[majory][majorx].Minor[minory][minorx] = BOARDEMPTY;
+	}}}}
+}
+
+void playToBoard(Coord c, Game *g, char tile) {
+	g->board[c.My][c.Mx].Minor[c.my][c.mx] = tile;
+}
+
+void fillMajor(Major *m, char c) {
+	int minorx, minory;
+
+	for (minorx = 0; minorx < 3; minorx++) {
+	for (minory = 0; minory < 3; minory++) {
+		m->Minor[minorx][minory] =	c;
+	}}
+}
+
+void emptyCoord(Coord *c) {
+	c->Mx = -1;
+	c->My = -1;
+	c->mx = -1;
+	c->my = -1;
+}
+

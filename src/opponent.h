@@ -7,4 +7,10 @@ version 1.0
 #ifndef OPPONENT_H
 #define OPPONENT_H
 
+#include "board.h"
+
+void computerInit(void);
+
+Coord randomStrat(Coord, Game);
+
 #endif

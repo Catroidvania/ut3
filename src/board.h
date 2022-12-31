@@ -5,21 +5,46 @@ version 1.0
 */
 
 #ifndef BOARD_H
+#define BOARD_H
 
 #include "main.h"
 
-#define BOARD_H
+#define BOARDEMPTY '.'
 
-#define DISPLAYWIDTH 80
-#define DISPLAYHEIGHT 24
+struct Coord {
+	// Major x, Major y, minor x, minor y
+	int Mx, My, mx, my;
+};
 
-/*
-arrays for game board and output buffer
-*/
+typedef struct Coord Coord;
 
-extern char board[3][3][3][3];
-extern char buffer[DISPLAYHEIGHT][DISPLAYWIDTH];
+struct Major {
+	char Minor[3][3];
+};
 
-void drawBuffer(int width, int height, char[height][width]);
+typedef struct Major Major;
+
+struct Game {
+	int turn;
+	int moverecord[81*4];
+	Major board[3][3];
+};
+
+typedef struct Game Game;
+
+Coord coordToBoardIndex(char[4]);
+
+int validMove(Coord, Coord, Game);
+int fillScored(Game*);
+
+char gameWon(Game);
+char majorScored(Major);
+char scorePositions(Major);
+
+void drawBoard(Game);
+void initBoard(Game*);
+void playToBoard(Coord, Game*, char);
+void emptyCoord(Coord*);
+void fillMajor(Major*, char);
 
 #endif

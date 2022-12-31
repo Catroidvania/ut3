@@ -1,11 +1,25 @@
-# makefile but from the main directory
+# makefile for the ultimate tic tac toe program
 # catroidvania 27 12 22
-# version 1.0
 
 CC = gcc
-MAKE = make
 SRCDIR = src
-SRCMAKE = all 
+BUILDDIR = build
+_OBJ = board.o opponent.o main.o
+OBJ = $(patsubst %,./$(SRCDIR)/%,$(_OBJ))
+FINAL = ut3
 
-all : $(SRCMAKE)
-	$(MAKE) -C $(SRCDIR) $(SRCMAKE)
+all : $(OBJ)
+	@echo "Linking object files..."
+	@mkdir -p $(BUILDDIR)
+	@# this method of changing directories feels quite ugly ://
+	@cd $(BUILDDIR) && $(CC) -o $(FINAL) $(subst $(SRCDIR),../$(SRCDIR),$^)
+	@echo "Files linked!"
+
+%.o : %.c
+	@cd $(SRCDIR) && $(CC) -c $(subst $(SRCDIR)/,,$<)
+
+clean : $(OBJ)
+	@echo "Removing object files..."
+	@rm $(OBJ)
+	@echo "Files removed!"
+

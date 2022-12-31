@@ -7,10 +7,9 @@ version 1.0
 #ifndef MAIN_H
 #define MAIN_H
 
-#define STDIN 0;
-#define STDOUT 1;
-#define STDERR 2;
+#include <stdio.h>
 
-#define arrayLen(a) (sizeof(a) / sizeof(a[0]))
+void waitForInput(void);
+void ffgets(char*, int, FILE*);
 
 #endif
