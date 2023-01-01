@@ -28,16 +28,17 @@ int validMove(Coord c, Coord lc, Game g) {
 		return 0;
 	}
 
-	if (g.board[c.Mx][c.My].Minor[c.mx][c.my] != BOARDEMPTY) {
-		return 0;
-	} else if (c.Mx != lc.mx || c.My != lc.my) {
-		if (lc.mx < 0 || lc.my < 0) {
+	if (g.board[c.Mx][c.My].Minor[c.mx][c.my] == BOARDEMPTY) {
+		if (c.Mx == lc.mx && c.My == lc.my) {
+			return 1;
+		} else if (majorScored(g.board[lc.mx][lc.my]) != BOARDEMPTY) {
+			return 1;
+		} else if (lc.Mx < 0 || lc.My < 0 || lc.mx < 0 || lc.my < 0) {
 			return 1;
 		}
-		return 0;
 	}
 
-	return 1;
+	return 0;
 }
 
 int fillScored(Game *g) {
@@ -94,7 +95,9 @@ char scorePositions(Major m) {
 	*/
 	for (i = 0; i < 3; i++) {
 		if (m.Minor[i][0] == m.Minor[i][1] && m.Minor[i][0] == m.Minor[i][2]) {
-			return m.Minor[i][0];
+			if (m.Minor[i][0] != BOARDEMPTY) {
+				return m.Minor[i][0];
+			}
 		}
 	}
 	/*
@@ -102,7 +105,9 @@ char scorePositions(Major m) {
 	*/
 	for (i = 0; i < 3; i++) {
 		if (m.Minor[0][i] == m.Minor[1][i] && m.Minor[0][i] == m.Minor[2][i]) {
-			return m.Minor[0][i];
+			if (m.Minor[0][i] != BOARDEMPTY) {
+				return m.Minor[0][i];
+			}
 		}
 	}
 	/*
@@ -110,7 +115,9 @@ char scorePositions(Major m) {
 	*/
 	if ((m.Minor[0][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[2][2]) ||
 		(m.Minor[2][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[0][2])) {
-		return m.Minor[1][1];
+		if (m.Minor[1][1] != BOARDEMPTY) {
+			return m.Minor[1][1];
+		}
 	}
 
 	return BOARDEMPTY;
@@ -122,16 +129,16 @@ void drawBoard(Game g) {
 	printf(" _________________________ \n");
 	printf("|                         |\n");
 
-	for (majory = 2; majory >= 0; majory--) {
-	for (minory = 2; minory >= 0; minory--) {
-		if (minory == 1) {
-			printf("%d %d  ", majory + 1, minory + 1);
+	for (majorx = 2; majorx >= 0; majorx--) {
+	for (minorx = 2; minorx >= 0; minorx--) {
+		if (minorx == 1) {
+			printf("%d %d  ", majorx + 1, minorx + 1);
 		} else {
-			printf("| %d  ", minory + 1);
+			printf("| %d  ", minorx + 1);
 		}
-		for (majorx = 0; majorx < 3; majorx++) {
-		for (minorx = 0; minorx < 3; minorx++) {
-			printf("%c ", g.board[majory][majorx].Minor[minory][minorx]);
+		for (majory = 0; majory < 3; majory++) {
+		for (minory = 0; minory < 3; minory++) {
+			printf("%c ", g.board[majorx][majory].Minor[minorx][minory]);
 		}
 			printf(" ");
 		}
@@ -164,7 +171,7 @@ void fillMajor(Major *m, char c) {
 
 	for (minorx = 0; minorx < 3; minorx++) {
 	for (minory = 0; minory < 3; minory++) {
-		m->Minor[minorx][minory] =	c;
+		m->Minor[minorx][minory] = c;
 	}}
 }
 

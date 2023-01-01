@@ -115,7 +115,7 @@ int main() {
 									 (char)cpu.mx + 97, cpu.my + 1);
 				
 				waitForInput();
-				
+
 				if (fillScored(&game)) {
 					emptyCoord(&cpu);
 				}
@@ -143,6 +143,7 @@ int main() {
 
 				if (!(validMove(move, cpu, game))) {
 					printf("Invalid move!\n");
+					waitForInput();
 					continue;
 				}
 			} else if (input[0] == 's') {
