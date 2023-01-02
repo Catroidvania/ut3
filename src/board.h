@@ -1,7 +1,6 @@
 /*
 header file for board.c
 catroidvania 27 12 22
-version 1.0
 */
 
 #ifndef BOARD_H
@@ -26,7 +25,7 @@ typedef struct Major Major;
 
 struct Game {
 	int turn;
-	int moverecord[81*4];
+	int moverecord[(81*4)+1];
 	Major board[3][3];
 };
 
@@ -46,5 +45,6 @@ void initBoard(Game*);
 void playToBoard(Coord, Game*, char);
 void emptyCoord(Coord*);
 void fillMajor(Major*, char);
+void recordMove(Coord, Game*, char);
 
 #endif

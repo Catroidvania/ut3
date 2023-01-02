@@ -1,7 +1,6 @@
 /* 
 file for board functions
 catroidvania 27 12 22
-version 1.0
 */
 
 #include <stdio.h>
@@ -50,8 +49,10 @@ int fillScored(Game *g) {
 	for (majory = 0; majory < 3; majory++) {
 		tile = scorePositions(g->board[majorx][majory]);
 		if (tile != BOARDEMPTY) {
-			fillMajor(&g->board[majorx][majory], tile);
-			scored = 1;
+			if (majorScored(g->board[majorx][majory]) == BOARDEMPTY) {
+				fillMajor(&g->board[majorx][majory], tile);
+				scored = 1;
+			}
 		}
 	}}
 
@@ -113,8 +114,8 @@ char scorePositions(Major m) {
 	/*
 	diagonals
 	*/
-	if ((m.Minor[0][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[2][2]) ||
-		(m.Minor[2][0] == m.Minor[1][1] && m.Minor[0][0] == m.Minor[0][2])) {
+	if ((m.Minor[1][1] == m.Minor[0][0] && m.Minor[1][1] == m.Minor[2][2]) ||
+		(m.Minor[1][1] == m.Minor[2][0] && m.Minor[1][1] == m.Minor[0][2])) {
 		if (m.Minor[1][1] != BOARDEMPTY) {
 			return m.Minor[1][1];
 		}
@@ -129,15 +130,15 @@ void drawBoard(Game g) {
 	printf(" _________________________ \n");
 	printf("|                         |\n");
 
-	for (majorx = 2; majorx >= 0; majorx--) {
-	for (minorx = 2; minorx >= 0; minorx--) {
+	for (majory = 2; majory >= 0; majory--) { // needs to be draw y first lmao
+	for (minory = 2; minory >= 0; minory--) {
 		if (minorx == 1) {
-			printf("%d %d  ", majorx + 1, minorx + 1);
+			printf("%d %d  ", majory + 1, minory + 1);
 		} else {
-			printf("| %d  ", minorx + 1);
+			printf("| %d  ", minory + 1);
 		}
-		for (majory = 0; majory < 3; majory++) {
-		for (minory = 0; minory < 3; minory++) {
+		for (majorx = 0; majorx < 3; majorx++) {
+		for (minorx = 0; minorx < 3; minorx++) {
 			printf("%c ", g.board[majorx][majory].Minor[minorx][minory]);
 		}
 			printf(" ");
@@ -152,7 +153,7 @@ void drawBoard(Game g) {
 }
 
 void initBoard(Game *g) {
-	int majorx, majory, minorx, minory;
+	int majorx, majory, minorx, minory, i;
 
 	for (majory = 0; majory < 3; majory++) {
 	for (majorx = 0; majorx < 3; majorx++) {
@@ -160,10 +161,16 @@ void initBoard(Game *g) {
 	for (minorx = 0; minorx < 3; minorx++) {
 		g->board[majory][majorx].Minor[minory][minorx] = BOARDEMPTY;
 	}}}}
+
+	g->turn = 1;
+
+	for (i = 0; i < 81 * 4; i++) {
+		g->moverecord[i] = -1;
+	}
 }
 
 void playToBoard(Coord c, Game *g, char tile) {
-	g->board[c.My][c.Mx].Minor[c.my][c.mx] = tile;
+	g->board[c.Mx][c.My].Minor[c.mx][c.my] = tile;
 }
 
 void fillMajor(Major *m, char c) {
@@ -182,3 +189,11 @@ void emptyCoord(Coord *c) {
 	c->my = -1;
 }
 
+void recordMove(Coord c, Game *g, char t) {
+	int recordindex = g->turn * 4;
+	g->moverecord[recordindex] = c.Mx;
+	g->moverecord[recordindex + 1] = c.My;
+	g->moverecord[recordindex + 2] = c.mx;
+	g->moverecord[recordindex + 3] = c.my;
+	g->moverecord[0] = (int)t;
+}

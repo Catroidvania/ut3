@@ -13,21 +13,19 @@ int main() {
 	Game game;
 	Coord move, cpu;
 
-	char menu, strat, first;
+	char menu, strat, turn, winner;
 	char input[4];
 
-	int run = 1, state = 1;
+	char P1CHAR = 'x';
+	char P2CHAR = 'o';
 	
-	initBoard(&game);
-	game.turn = 0;
-
+	int run = 1, state = 1;
+	int i;
+	
 	computerInit();
 
-	emptyCoord(&move);
-	emptyCoord(&cpu);
-
 	while (run) {
-		printf("%c[2J%c[;H", ESC, ESC);
+		printf("%c[2J%c[;H", (char)27, (char)27);
 
 		if (state == 1) {
 			printf("\nWhat would you like to do?:\n");
@@ -38,18 +36,11 @@ int main() {
 			ffgets(&menu, 1, stdin);
 
 			if (menu == 'p') {
-				state = 2;
 				printf("\nWho goes first?:\n");
 				printf("(p)layer\n");
 				printf("(c)omputer\n");
 				printf("Bracketed letter of option: ");
-				ffgets(&first, 1, stdin);
-
-				if (first == 'c') {
-					game.turn = 1;
-				} else {
-					game.turn = 0;
-				}
+				ffgets(&turn, 1, stdin);
 
 				printf("\nWhat strategy should the computer use?:\n");
 				printf("(r)andom\n");
@@ -67,7 +58,19 @@ int main() {
 				ffgets(&strat, 1, stdin);
 
 				strat = 'r';  /* to remove */
+	
+				initBoard(&game);
+				
+				emptyCoord(&move);
+				emptyCoord(&cpu);
 
+				if (turn == 'c') {
+					turn = P2CHAR;
+				} else {
+					turn = P1CHAR;
+				}
+
+				state = 2;
 
 			} else if (menu == 'l') {
 				continue;
@@ -78,7 +81,28 @@ int main() {
 				waitForInput();
 			}
 		} else if (state == 2) {
-			if (game.turn) {
+			if (gameWon(game) != BOARDEMPTY) {
+				winner = gameWon(game);
+				if (winner == P1CHAR) {
+					printf("\nPlayer wins! Congrats!\n");
+				} else {
+					printf("\nComputer wins! Better luck next time!\n");
+				}
+				
+				for (i = 0; i < 81 * 4; i++) {
+					printf("%d", game.moverecord[i]);
+				}
+
+				printf("\n");
+
+				waitForInput();
+				state = 1;
+				continue;
+			}
+
+			printf("Turn %d: ", game.turn);
+
+			if (turn == P2CHAR) {
 				printf("Computer turn! ");
 			} else {
 				printf("Player turn! ");
@@ -86,17 +110,17 @@ int main() {
 		
 			printf("Previous move: ");
 
-			if ((game.turn) && (move.Mx >= 0 && move.My >= 0)) {	
+			if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {	
 				printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
 									 (char)move.mx + 97, move.my + 1);
 			} else if (cpu.Mx >= 0 && cpu.My >= 0) {
 				printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
 									 (char)cpu.mx + 97, cpu.my + 1);
 			} else {
-				printf("i forgor lol\n");
+				printf("Play anywhere!\n");
 			}
 		
-			if (game.turn) {
+			if (turn == P2CHAR) {
 				if (strat == 'r') {
 					cpu = randomStrat(move, game);
 				} else {
@@ -106,7 +130,8 @@ int main() {
 					continue;
 				}
 
-				playToBoard(cpu, &game, 'o');
+				playToBoard(cpu, &game, P2CHAR);
+				recordMove(cpu, &game, P2CHAR);
 
 				drawBoard(game);
 
@@ -120,7 +145,8 @@ int main() {
 					emptyCoord(&cpu);
 				}
 
-				game.turn = 0;
+				game.turn++;
+				turn = P1CHAR;
 				continue;
 			}
 
@@ -159,13 +185,17 @@ int main() {
 				continue;
 			}
 
-			playToBoard(move, &game, 'x');
+			playToBoard(move, &game, P1CHAR);
+			recordMove(move, &game, P1CHAR);
+
+			game.turn++;
 	
 			if (fillScored(&game)) {
 				emptyCoord(&move);
 			}
 
-			game.turn = 1;
+			turn = P2CHAR;
+			
 			/*
 			TODO
 			win checking

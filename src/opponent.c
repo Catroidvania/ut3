@@ -1,7 +1,6 @@
 /*
 file for computer opponent functions
 catroidvania 27 12 22
-version 1.0
 */
 
 #include <time.h>
@@ -20,6 +19,8 @@ Coord randomStrat(Coord lastmove, Game g) {
 	
 	if (lastmove.mx < 0 || lastmove.my < 0) {
 		randmajor = 1;
+	} else if (majorScored(g.board[lastmove.mx][lastmove.my]) != BOARDEMPTY) {
+		randmajor = 1;
 	} else {
 		cpumove.Mx = lastmove.mx;
 		cpumove.My = lastmove.my;
@@ -36,8 +37,6 @@ Coord randomStrat(Coord lastmove, Game g) {
 
 		cpumove.mx = rand() % 3;
 		cpumove.my = rand() % 3;
-
-		//printf("%d%d%d%d\n", cpumove.Mx, cpumove.My, cpumove.mx, cpumove.my);
 	
 	} while (!validMove(cpumove, lastmove, g));
 
