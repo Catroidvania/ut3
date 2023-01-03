@@ -11,7 +11,15 @@ catroidvania 27 12 22
 extern char P1CHAR;
 extern char P2CHAR;
 
+int waitForConfirm(void);
+int slotFull(int);
+
+void initSaveFile(void);
 void waitForInput(void);
 void ffgets(char*, int, FILE*);
 
+#endif
+
+#ifndef DBNAME
+#define DBNAME "SAVES.db"
 #endif

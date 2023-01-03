@@ -8,7 +8,7 @@ catroidvania 27 12 22
 
 #include "board.h"
 
-void computerInit(void);
+void initCpuRandom(void);
 
 Coord randomStrat(Coord, Game);
 

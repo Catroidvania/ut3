@@ -9,7 +9,7 @@ catroidvania 27 12 22
 #include "opponent.h"
 #include "board.h"
 
-void computerInit() {
+void initCpuRandom() {
 	srand((unsigned int)time(NULL));
 }
 

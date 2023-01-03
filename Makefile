@@ -1,23 +1,32 @@
 # makefile for the ultimate tic tac toe program
 # catroidvania 27 12 22
 
-CC = gcc
-SRCDIR = src
 BUILDDIR = build
-_OBJ = board.o opponent.o main.o
-OBJ = $(patsubst %,./$(SRCDIR)/%,$(_OBJ))
-FINAL = ut3
+SRCDIR = src
+DEPDIR = deps
+MAKEFILES = src/Makefile deps/Makefile
 
-all : $(OBJ)
-	@echo "Building..."
-	@cd $(BUILDDIR) && $(CC) -o $(FINAL) $(subst $(SRCDIR),../$(SRCDIR),$^)
-	@echo "Build complete!"
+ifeq ($(OS),Windows_NT)
+MAKE = mingw32-make
+else
+MAKE = make
+endif
 
-%.o : %.c
-	@cd $(SRCDIR) && $(CC) -c $(subst $(SRCDIR)/,,$<)
+all : objs
+	@echo "Locating build Makefile..."
+	@$(MAKE) -C $(BUILDDIR)
 
-clean : $(OBJ)
-	@echo "Removing object files..."
-	@rm $(OBJ)
-	@echo "Files removed!"
+objs : $(MAKEFILES)
+	@echo "Locating source Makefile"
+	@$(MAKE) -C $(SRCDIR)
+	@echo "Locating dependancies Makefile"
+	@$(MAKE) -C $(DEPDIR)
+
+clean : $(MAKEFILES)
+	@echo "Locating source Makefile..."
+	@$(MAKE) -C $(SRCDIR) clean
+	@echo "Locating dependancies Makefile..."
+	@$(MAKE) -C $(DEPDIR) clean
+	@echo "Locating build Makefile..."
+	@$(MAKE) -C $(BUILDDIR) clean
 

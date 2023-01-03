@@ -4,6 +4,13 @@ created 27 12 22
 */
 
 #include <stdio.h>
+#include <sys/stat.h>
+
+/*
+now that i think about it i shouldve just built sqlite3
+myself i dont need all eight million constants lol
+*/
+#include "sqlite3.h"
 
 #include "main.h"
 #include "board.h"
@@ -13,16 +20,17 @@ int main() {
 	Game game;
 	Coord move, cpu;
 
-	char menu, strat, turn, winner;
+	char menu, strat, turn, winner, cslot;
 	char input[4];
 
 	char P1CHAR = 'x';
 	char P2CHAR = 'o';
 	
-	int run = 1, state = 1;
-	int i;
+	int run = 1, state = 1, saved = 0;
+	int i, slot;
 	
-	computerInit();
+	initSaveFile();
+	initCpuRandom();
 
 	while (run) {
 		printf("%c[2J%c[;H", (char)27, (char)27);
@@ -73,6 +81,18 @@ int main() {
 				state = 2;
 
 			} else if (menu == 'l') {
+				printf("\nLoad which slot?: ");
+				ffgets(&cslot, 1, stdin);
+				slot = (int)cslot - 48;
+
+				if (slot < 1) {
+					printf("Invalid slot!\n");
+					waitForInput();
+					continue;
+				}
+
+				loadSave(slot, &game);
+
 				continue;
 			} else if (menu == 'q') {
 				break;
@@ -110,12 +130,23 @@ int main() {
 		
 			printf("Previous move: ");
 
-			if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {	
-				printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
-									 (char)move.mx + 97, move.my + 1);
+			/*
+			theres probably some logic combination that works better than this
+			*/
+			if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
+				if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY) {
+					printf("Play anywhere!\n");
+				} else {
+					printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
+										 (char)move.mx + 97, move.my + 1);
+				}
 			} else if (cpu.Mx >= 0 && cpu.My >= 0) {
-				printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
-									 (char)cpu.mx + 97, cpu.my + 1);
+				if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY) {
+					printf("Play anywhere!\n");
+				} else {
+					printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
+										 (char)cpu.mx + 97, cpu.my + 1);
+				}
 			} else {
 				printf("Play anywhere!\n");
 			}
@@ -147,6 +178,7 @@ int main() {
 
 				game.turn++;
 				turn = P1CHAR;
+				saved = 0;
 				continue;
 			}
 
@@ -173,9 +205,41 @@ int main() {
 					continue;
 				}
 			} else if (input[0] == 's') {
+				printf("\nSlot to save to: ");
+				ffgets(&cslot, 1, stdin);
+				slot = (int)cslot - 48;
+
+				if (slot < 1) {
+					printf("Invalid slot!\n");
+					waitForInput();
+					continue;
+				}
+
+				printf("\nConfirm saving to slot %d?\n", slot);
+				printf("(Any data in slot %d will be overwritten!)", slot);
+				
+				if (waitForConfirm()) {
+					addSave(slot, game);
+					printf("\nGame saved to slot %d!\n", slot);
+					saved = 1;
+				} else {
+					printf("\nSave cancelled!\n");
+				}
+
+				waitForInput();
 				continue;
 			} else if (input[0] == 'q') {
-				state = 1;
+				if (!saved) {
+					printf("\nAre you sure you want to quit?\n");
+					printf("(Any unsaved data will be lost!)");
+
+					if (waitForConfirm()) {
+						state = 1;
+					}
+				} else {
+					state = 1;
+				}
+
 				continue;
 			} else if (validMove(coordToBoardIndex(input), cpu, game)) {
 				move = coordToBoardIndex(input);
@@ -195,23 +259,108 @@ int main() {
 			}
 
 			turn = P2CHAR;
+			saved = 0;
 			
 			/*
 			TODO
-			win checking
-			previous move incorrectly displays scored sometimes
 			save / load
 			extra cpu starts
 			explosions
-			fix valid move checking; sometimes gives freedom sometimes doesnt?
-			also lets the opponent play into a scored square because it doesnt
-			fill for some reason?? might be a logic issue idk
+			fix valid move checking; still forces you into a scored major
+			sometimes \\:
+			ok like it looks fine but im still a bit sussed out
 			*/
 		}
 	}
 	
 	printf("Bye bye!\n");
 	return 0;
+}
+
+int waitForConfirm() {
+	char confirm;
+
+	printf("\n(y/n): ");
+	ffgets(&confirm, 1, stdin);
+
+	if (confirm == 'y') {
+		return 1;
+	}
+
+	return 0;
+}
+
+int slotFull(int slot) {
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+
+	int rc, exists;
+
+	char *sql = "SELECT id FROM saves WHERE id = ?;";
+
+	sqlite3_open(DBNAME, &db);
+
+	if (db == NULL) {
+		return 1;
+	}
+
+	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, slot);
+
+	do {
+		rc = sqlite3_step(stmt);
+		if (rc == SQLITE_ROW) {
+			exists = sqlite3_column_int(stmt, 0);
+		}
+	} while (rc != SQLITE_DONE);
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+
+	if (exists) {
+		return 1;
+	}
+
+	return 0;
+}
+
+void initSaveFile() {
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+	
+	FILE *fp;
+
+	char *sql = 
+		"CREATE TABLE saves (id INTEGER NOT NULL PRIMARY KEY, record TEXT NOT NULL);";
+
+	int rc;
+
+	fp = fopen(DBNAME, "r");
+
+	if (fp) {
+		fclose(fp);
+		return;
+	}
+
+	fp = fopen(DBNAME, "w");
+	fclose(fp);
+
+	sqlite3_open(DBNAME, &db);
+
+	if (db == NULL) {
+		printf("\nFailed to open saves database!\n");
+		waitForInput();
+		return;
+	}
+
+	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	
+	do {
+		rc = sqlite3_step(stmt);
+	} while (rc != SQLITE_DONE);
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
 }
 
 void waitForInput() {
@@ -233,7 +382,7 @@ void ffgets(char *buf, int bufsize, FILE *stream) {
 	while (1) {
 		c = fgetc(stream);
 		
-		if (c == '\0' || c == '\n') {
+		if (c == '\n' || c == EOF) {
 			break;
 		} else if (x < bufsize) {
 			buf[x++] = c;
