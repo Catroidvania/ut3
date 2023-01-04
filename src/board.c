@@ -167,7 +167,7 @@ void initBoard(Game *g) {
 	g->turn = 1;
 
 	for (i = 0; i <= 81 * 4; i++) {
-		g->moverecord[i] = '.';
+		g->moverecord[i] = BOARDEMPTY;
 	}
 }
 
@@ -191,20 +191,60 @@ void emptyCoord(Coord *c) {
 	c->my = -1;
 }
 
-void recordMove(Coord c, Game *g, char t) {
+void recordMove(Coord c, Game *g, char strat) {
 	int recordindex = ((g->turn - 1) * 4) + 1;
+
 	g->moverecord[recordindex] = (char)(c.Mx + 97);
 	g->moverecord[recordindex + 1] = (char)(c.My + 49);
 	g->moverecord[recordindex + 2] = (char)(c.mx + 97);
 	g->moverecord[recordindex + 3] = (char)(c.my + 49);
-	g->moverecord[0] = t;
+	g->moverecord[0] = strat;
+}
+
+void playRecordToBoard(Game *g, char p1, char p2) {
+	Coord move;
+
+	int i, turn;
+
+	char c;
+
+	for (i = 1; i <= 81 * 4; i += 4) {
+		if (g->moverecord[i] != BOARDEMPTY) {
+			g->turn++;
+		}
+	}
+
+	printf("%d", g->turn);
+
+	if (!(g->turn % 2)) {
+		c = p1;
+		p1 = p2;
+		p2 = c;
+	}
+
+	for (i = 1; i < (g->turn * 4); i += 4) {
+		move.Mx = (int)g->moverecord[i] - 97;
+		move.My = (int)g->moverecord[i + 1] - 49;
+		move.mx = (int)g->moverecord[i + 2] - 97;
+		move.my = (int)g->moverecord[i + 3] - 49;
+
+		if (move.Mx < 3) {
+			playToBoard(move, g, p1);
+		}
+
+		fillScored(g);
+
+		c = p1;
+		p1 = p2;
+		p2 = c;
+	}
 }
 
 void addSave(int slot, Game g) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int rc, saveno, i;
+	int rc, saveno;
 
 	char *sql;
 
@@ -215,37 +255,30 @@ void addSave(int slot, Game g) {
 		waitForInput();
 		return;
 	} else {
+		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+
 		if (slotFull(slot)) {
 			sql = "UPDATE saves SET record = ? WHERE id = ?;";
 			sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-			sqlite3_bind_text(stmt, 1, g.moverecord,
+			sqlite3_bind_blob(stmt, 1, g.moverecord,
 							((81 * 4) + 1) * sizeof(char), SQLITE_STATIC);
 			sqlite3_bind_int(stmt, 2, slot);
 		} else {
 			sql = "INSERT INTO saves (id, record) VALUES (?, ?);";
 			sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 			sqlite3_bind_int(stmt, 1, slot);
-			sqlite3_bind_text(stmt, 2, g.moverecord,
+			sqlite3_bind_blob(stmt, 2, g.moverecord,
 							((81 * 4) + 1) * sizeof(char), SQLITE_STATIC);
 		}
 	
-		do {
+		while (rc != SQLITE_DONE) {
 			rc = sqlite3_step(stmt);
-		} while (rc != SQLITE_DONE);
+		}
 
 		sqlite3_finalize(stmt);
 
-		sqlite3_prepare_v2(db, "PRAGMA database_list;", -1, &stmt, NULL);
-		do {
-			rc = sqlite3_step(stmt);
-			if (rc == SQLITE_ROW) {
-				for (i = 0; i < sqlite3_column_count(stmt); i++) {
-					printf("%s", sqlite3_column_text(stmt, i));
-				}
-			}
-		} while (rc != SQLITE_DONE);
-		sqlite3_finalize(stmt);
-		
+		sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+
 		sqlite3_close(db);
 	}
 }
@@ -257,6 +290,7 @@ void loadSave(int slot, Game *g) {
 	int rc, i;
 
 	char *record;
+
 	char *sql = "SELECT record FROM saves WHERE id = ?;";
 
 	sqlite3_open(DBNAME, &db);
@@ -267,29 +301,27 @@ void loadSave(int slot, Game *g) {
 		return;
 	}
 
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, slot);
 
-	do {
+	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
 		if (rc == SQLITE_ROW) {
-			record = (char*)sqlite3_column_text(stmt, 0);
+			record = (char*)sqlite3_column_blob(stmt, 0);
+			if (record) {
+				for (i = 0; i <= 81 * 4; i++) {
+					g->moverecord[i] = record[i];
+				}
+			}
 		}
-	} while (rc != SQLITE_DONE);
-
-	if (record) {
-		for (i = 0; i <= 81 * 4; i++) {
-			g->moverecord[i] = record[i];
-			printf("%c", record[i]);
-		}
-	} else {
-		printf("\nSave could not be loaded...\n");
-		initBoard(g);
 	}
 
-	waitForInput();
-
 	sqlite3_finalize(stmt);
+
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+
 	sqlite3_close(db);
 }
 

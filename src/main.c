@@ -4,7 +4,6 @@ created 27 12 22
 */
 
 #include <stdio.h>
-#include <sys/stat.h>
 
 /*
 now that i think about it i shouldve just built sqlite3
@@ -91,67 +90,116 @@ int main() {
 					continue;
 				}
 
+				initBoard(&game);
+				
+				emptyCoord(&move);
+				emptyCoord(&cpu);
+
 				loadSave(slot, &game);
 
-				continue;
+				playRecordToBoard(&game, P1CHAR, P2CHAR);
+
+				strat = game.moverecord[0];
+				
+				if (game.turn % 2) {
+					turn = 'p';
+					for (i = 0; i < 4; i++) {
+						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
+					}
+					cpu = coordToBoardIndex(input);
+					if (majorScored(game.board[cpu.Mx][cpu.My])) {
+						emptyCoord(&cpu);
+					}
+
+					for (i = 0; i < 4; i++) {
+						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
+					}
+					move = coordToBoardIndex(input);
+					if (majorScored(game.board[move.Mx][move.My])) {
+						emptyCoord(&move);
+					}
+
+				} else {
+					turn = 'c';
+					for (i = 0; i < 4; i++) {
+						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
+					}
+					move = coordToBoardIndex(input);
+					if (majorScored(game.board[move.Mx][move.My])) {
+						emptyCoord(&move);
+					}
+
+					for (i = 0; i < 4; i++) {
+						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
+					}
+					cpu = coordToBoardIndex(input);
+					if (majorScored(game.board[cpu.Mx][cpu.My])) {
+						emptyCoord(&cpu);
+					}
+				}
+
+				saved = 1;
+				state = 2;
 			} else if (menu == 'q') {
 				break;
 			} else {
 				printf("Please input a valid option!\n");
 				waitForInput();
 			}
-		} else if (state == 2) {
-			if (gameWon(game) != BOARDEMPTY) {
+		} else if (state > 1) {
+			if (gameWon(game) != BOARDEMPTY && state == 2) {
 				winner = gameWon(game);
+				state = 3;
+
 				if (winner == P1CHAR) {
-					printf("\nPlayer wins! Congrats!\n");
-				} else {
-					printf("\nComputer wins! Better luck next time!\n");
-				}
-				
-				for (i = 0; i < 81 * 4; i++) {
-					printf("%d", game.moverecord[i]);
+					move = coordToBoardIndex("d4d4");
+					recordMove(move, &game, strat);
 				}
 
-				printf("\n");
-
-				waitForInput();
-				state = 1;
-				continue;
+				emptyCoord(&move);
+				emptyCoord(&cpu);
 			}
 
-			printf("Turn %d: ", game.turn);
+			if (state == 2) {
+				printf("Turn %d: ", game.turn);
 
-			if (turn == P2CHAR) {
-				printf("Computer turn! ");
-			} else {
-				printf("Player turn! ");
+				if (turn == P2CHAR) {
+					printf("Computer turn! ");
+				} else {
+					printf("Player turn! ");
+				}
+			
+				printf("Previous move: ");
+
+				/*
+				theres probably some logic combination that works better than this
+				*/
+				if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
+					if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY) {
+						printf("Play anywhere!\n");
+					} else {
+						printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
+											 (char)move.mx + 97, move.my + 1);
+					}
+				} else if (cpu.Mx >= 0 && cpu.My >= 0) {
+					if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY) {
+						printf("Play anywhere!\n");
+					} else {
+						printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
+											 (char)cpu.mx + 97, cpu.my + 1);
+					}
+				} else {
+					printf("Play anywhere!\n");
+				}
+			} else if (state == 3) {
+				if (winner == P1CHAR) {
+					printf("You win! Way to go Ultimate Tic Tac Toer!\n");
+				} else if (winner == P2CHAR) {
+					printf("You lose! Better luck next time!\n");
+				}
 			}
 		
-			printf("Previous move: ");
-
-			/*
-			theres probably some logic combination that works better than this
-			*/
-			if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
-				if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY) {
-					printf("Play anywhere!\n");
-				} else {
-					printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
-										 (char)move.mx + 97, move.my + 1);
-				}
-			} else if (cpu.Mx >= 0 && cpu.My >= 0) {
-				if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY) {
-					printf("Play anywhere!\n");
-				} else {
-					printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
-										 (char)cpu.mx + 97, cpu.my + 1);
-				}
-			} else {
-				printf("Play anywhere!\n");
-			}
-		
-			if (turn == P2CHAR) {
+			if (turn == P2CHAR && state == 2) {
 				if (strat == 'r') {
 					cpu = randomStrat(move, game);
 				} else {
@@ -162,7 +210,7 @@ int main() {
 				}
 
 				playToBoard(cpu, &game, P2CHAR);
-				recordMove(cpu, &game, P2CHAR);
+				recordMove(cpu, &game, strat);
 
 				drawBoard(game);
 
@@ -185,13 +233,19 @@ int main() {
 			drawBoard(game);
 
 			printf("\nWhat would you like to do?:\n");
-			printf("(p)lay a move\n");
+			if (state == 2) {
+				printf("(p)lay a move\n");
+			}
 			printf("(s)ave game\n");
 			printf("(q)uit game\n");
-			printf("Bracketed letter or input a valid move (eg. a3c2): ");
+			printf("Bracketed letter");
+			if (state == 2) {
+				printf(" or input a valid move (eg. a3c2)");
+			}
+			printf(": ");c2c3c2c3
 			ffgets(&input[0], 4, stdin);
 
-			if (input[0] == 'p') {
+			if (input[0] == 'p' && state == 2) {
 				printf("Major coordinate?: ");
 				ffgets(&input[0], 2, stdin);
 				printf("Minor coordinate?: ");
@@ -249,9 +303,10 @@ int main() {
 				continue;
 			}
 
-			playToBoard(move, &game, P1CHAR);
-			recordMove(move, &game, P1CHAR);
-
+			if (state == 2) {
+				playToBoard(move, &game, P1CHAR);
+				recordMove(move, &game, strat);
+			}
 			game.turn++;
 	
 			if (fillScored(&game)) {
@@ -263,12 +318,11 @@ int main() {
 			
 			/*
 			TODO
-			save / load
 			extra cpu starts
 			explosions
-			fix valid move checking; still forces you into a scored major
-			sometimes \\:
-			ok like it looks fine but im still a bit sussed out
+			save / load doesnt set previous moves properly
+			occasionally places the wrong tiles :// i htink
+			need to account for dummy move in turn counter
 			*/
 		}
 	}
@@ -304,24 +358,30 @@ int slotFull(int slot) {
 		return 1;
 	}
 
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, slot);
 
-	do {
+	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
 		if (rc == SQLITE_ROW) {
 			exists = sqlite3_column_int(stmt, 0);
 		}
-	} while (rc != SQLITE_DONE);
-
-	sqlite3_finalize(stmt);
-	sqlite3_close(db);
-
-	if (exists) {
-		return 1;
 	}
 
-	return 0;
+	if (exists) {
+		exists = 1;
+	} else {
+		exists = 0;
+	}
+
+	sqlite3_finalize(stmt);
+
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+	sqlite3_close(db);
+
+	return exists;
 }
 
 void initSaveFile() {
@@ -331,7 +391,9 @@ void initSaveFile() {
 	FILE *fp;
 
 	char *sql = 
-		"CREATE TABLE saves (id INTEGER NOT NULL PRIMARY KEY, record TEXT NOT NULL);";
+		"CREATE TABLE saves ("\
+		"id INTEGER NOT NULL PRIMARY KEY,"\
+		"record BLOB NOT NULL);";
 
 	int rc;
 
@@ -353,13 +415,18 @@ void initSaveFile() {
 		return;
 	}
 
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	
-	do {
+	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
-	} while (rc != SQLITE_DONE);
+	}
 
 	sqlite3_finalize(stmt);
+
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+
 	sqlite3_close(db);
 }
 
