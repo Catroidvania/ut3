@@ -17,9 +17,9 @@ all : objs
 	@$(MAKE) -C $(BUILDDIR)
 
 objs : $(MAKEFILES)
-	@echo "Locating source Makefile"
+	@echo "Locating source Makefile..."
 	@$(MAKE) -C $(SRCDIR)
-	@echo "Locating dependancies Makefile"
+	@echo "Locating dependancies Makefile..."
 	@$(MAKE) -C $(DEPDIR)
 
 clean : $(MAKEFILES)

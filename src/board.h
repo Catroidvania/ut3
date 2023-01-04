@@ -33,6 +33,8 @@ Coord coordToBoardIndex(char[4]);
 
 int validMove(Coord, Coord, Game);
 int fillScored(Game*);
+int gameTied(Game);
+int majorTied(Major);
 
 char gameWon(Game);
 char majorScored(Major);
@@ -44,7 +46,7 @@ void playToBoard(Coord, Game*, char);
 void emptyCoord(Coord*);
 void fillMajor(Major*, char);
 void recordMove(Coord, Game*, char);
-void playRecordToBoard(Game*, char, char);
+void playRecordToBoard(Game*, Coord*, Coord*, char, char);
 void loadSave(int, Game*);
 void addSave(int, Game);
 

@@ -36,6 +36,8 @@ int validMove(Coord c, Coord lc, Game g) {
 			return 1;
 		} else if (lc.Mx < 0 || lc.My < 0 || lc.mx < 0 || lc.my < 0) {
 			return 1;
+		} else if (majorTied(g.board[lc.mx][lc.my])) {
+			return 1;
 		}
 	}
 
@@ -59,6 +61,34 @@ int fillScored(Game *g) {
 	}}
 
 	return scored;
+}
+
+int gameTied(Game g) {
+	int Mx, My, mx, my;
+
+	for (Mx = 0; Mx < 3; Mx++) {
+	for (My = 0; My < 3; My++) {
+	for (mx = 0; mx < 3; mx++) {
+	for (my = 0; my < 3; my++) {
+		if (g.board[Mx][My].Minor[mx][my] == BOARDEMPTY) {
+			return 0;
+		}
+	}}}}
+
+	return 1;
+}
+
+int majorTied(Major m) {
+	int mx, my;
+	
+	for (mx = 0; mx < 3; mx++) {
+	for (my = 0; my < 3; my++) {
+		if (m.Minor[mx][my] == BOARDEMPTY) {
+			return 0;
+		}
+	}}
+
+	return 1;
 }
 
 char majorScored(Major m) {
@@ -201,7 +231,7 @@ void recordMove(Coord c, Game *g, char strat) {
 	g->moverecord[0] = strat;
 }
 
-void playRecordToBoard(Game *g, char p1, char p2) {
+void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 	Coord move;
 
 	int i, turn;
@@ -214,29 +244,37 @@ void playRecordToBoard(Game *g, char p1, char p2) {
 		}
 	}
 
-	printf("%d", g->turn);
-
 	if (!(g->turn % 2)) {
 		c = p1;
 		p1 = p2;
 		p2 = c;
+
+		move = *m1;
+		*m1 = *m2;
+		*m2 = move;
 	}
 
-	for (i = 1; i < (g->turn * 4); i += 4) {
-		move.Mx = (int)g->moverecord[i] - 97;
-		move.My = (int)g->moverecord[i + 1] - 49;
-		move.mx = (int)g->moverecord[i + 2] - 97;
-		move.my = (int)g->moverecord[i + 3] - 49;
+	for (i = 1; i < ((g->turn - 1) * 4); i += 4) {
+		m1->Mx = (int)g->moverecord[i] - 97;
+		m1->My = (int)g->moverecord[i + 1] - 49;
+		m1->mx = (int)g->moverecord[i + 2] - 97;
+		m1->my = (int)g->moverecord[i + 3] - 49;
 
-		if (move.Mx < 3) {
-			playToBoard(move, g, p1);
+		if (m1->Mx < 3) {
+			playToBoard(*m1, g, p1);
 		}
 
-		fillScored(g);
+		if (fillScored(g)) {
+			emptyCoord(m1);
+		}
 
 		c = p1;
 		p1 = p2;
 		p2 = c;
+
+		move = *m1;
+		*m1 = *m2;
+		*m2 = move;
 	}
 }
 

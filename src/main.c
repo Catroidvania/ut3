@@ -97,17 +97,18 @@ int main() {
 
 				loadSave(slot, &game);
 
-				playRecordToBoard(&game, P1CHAR, P2CHAR);
+				playRecordToBoard(&game, &move, &cpu, P1CHAR, P2CHAR);
 
 				strat = game.moverecord[0];
 				
+				/*
 				if (game.turn % 2) {
 					turn = 'p';
 					for (i = 0; i < 4; i++) {
 						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
 					}
 					cpu = coordToBoardIndex(input);
-					if (majorScored(game.board[cpu.Mx][cpu.My])) {
+					if (majorScored(game.board[cpu.Mx][cpu.My]) != BOARDEMPTY) {
 						emptyCoord(&cpu);
 					}
 
@@ -115,7 +116,7 @@ int main() {
 						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
 					}
 					move = coordToBoardIndex(input);
-					if (majorScored(game.board[move.Mx][move.My])) {
+					if (majorScored(game.board[move.Mx][move.My]) != BOARDEMPTY) {
 						emptyCoord(&move);
 					}
 
@@ -125,7 +126,7 @@ int main() {
 						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
 					}
 					move = coordToBoardIndex(input);
-					if (majorScored(game.board[move.Mx][move.My])) {
+					if (majorScored(game.board[move.Mx][move.My]) != BOARDEMPTY) {
 						emptyCoord(&move);
 					}
 
@@ -133,10 +134,15 @@ int main() {
 						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
 					}
 					cpu = coordToBoardIndex(input);
-					if (majorScored(game.board[cpu.Mx][cpu.My])) {
+					if (majorScored(game.board[cpu.Mx][cpu.My]) != BOARDEMPTY) {
 						emptyCoord(&cpu);
 					}
 				}
+				*/
+
+				printf("%d %d %d %d\n", cpu.Mx, cpu.My, cpu.mx, cpu.my);
+				printf("%d %d %d %d\n", move.Mx, move.My, move.mx, move.my);
+				waitForInput();
 
 				saved = 1;
 				state = 2;
@@ -158,6 +164,12 @@ int main() {
 
 				emptyCoord(&move);
 				emptyCoord(&cpu);
+			} else if (gameTied(game)) {
+				state = 3;
+				winner = 't';
+
+				emptyCoord(&move);
+				emptyCoord(&cpu);
 			}
 
 			if (state == 2) {
@@ -175,14 +187,16 @@ int main() {
 				theres probably some logic combination that works better than this
 				*/
 				if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
-					if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY) {
+					if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY ||
+						majorTied(game.board[cpu.mx][cpu.my])) {
 						printf("Play anywhere!\n");
 					} else {
 						printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
 											 (char)move.mx + 97, move.my + 1);
 					}
 				} else if (cpu.Mx >= 0 && cpu.My >= 0) {
-					if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY) {
+					if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY ||
+						majorTied(game.board[cpu.mx][cpu.my])) {
 						printf("Play anywhere!\n");
 					} else {
 						printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
@@ -196,6 +210,8 @@ int main() {
 					printf("You win! Way to go Ultimate Tic Tac Toer!\n");
 				} else if (winner == P2CHAR) {
 					printf("You lose! Better luck next time!\n");
+				} else {
+					printf("Tie! Nobody wins!\n");
 				}
 			}
 		
@@ -242,7 +258,7 @@ int main() {
 			if (state == 2) {
 				printf(" or input a valid move (eg. a3c2)");
 			}
-			printf(": ");c2c3c2c3
+			printf(": ");
 			ffgets(&input[0], 4, stdin);
 
 			if (input[0] == 'p' && state == 2) {
@@ -322,7 +338,7 @@ int main() {
 			explosions
 			save / load doesnt set previous moves properly
 			occasionally places the wrong tiles :// i htink
-			need to account for dummy move in turn counter
+			tie checking
 			*/
 		}
 	}
