@@ -100,49 +100,6 @@ int main() {
 				playRecordToBoard(&game, &move, &cpu, P1CHAR, P2CHAR);
 
 				strat = game.moverecord[0];
-				
-				/*
-				if (game.turn % 2) {
-					turn = 'p';
-					for (i = 0; i < 4; i++) {
-						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
-					}
-					cpu = coordToBoardIndex(input);
-					if (majorScored(game.board[cpu.Mx][cpu.My]) != BOARDEMPTY) {
-						emptyCoord(&cpu);
-					}
-
-					for (i = 0; i < 4; i++) {
-						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
-					}
-					move = coordToBoardIndex(input);
-					if (majorScored(game.board[move.Mx][move.My]) != BOARDEMPTY) {
-						emptyCoord(&move);
-					}
-
-				} else {
-					turn = 'c';
-					for (i = 0; i < 4; i++) {
-						input[i] = game.moverecord[((game.turn-1)*4)+i-3];
-					}
-					move = coordToBoardIndex(input);
-					if (majorScored(game.board[move.Mx][move.My]) != BOARDEMPTY) {
-						emptyCoord(&move);
-					}
-
-					for (i = 0; i < 4; i++) {
-						input[i] = game.moverecord[((game.turn-1)*4)+i+1];
-					}
-					cpu = coordToBoardIndex(input);
-					if (majorScored(game.board[cpu.Mx][cpu.My]) != BOARDEMPTY) {
-						emptyCoord(&cpu);
-					}
-				}
-				*/
-
-				printf("%d %d %d %d\n", cpu.Mx, cpu.My, cpu.mx, cpu.my);
-				printf("%d %d %d %d\n", move.Mx, move.My, move.mx, move.my);
-				waitForInput();
 
 				saved = 1;
 				state = 2;
@@ -336,9 +293,7 @@ int main() {
 			TODO
 			extra cpu starts
 			explosions
-			save / load doesnt set previous moves properly
-			occasionally places the wrong tiles :// i htink
-			tie checking
+			documentation / commenting
 			*/
 		}
 	}
