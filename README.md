@@ -12,15 +12,14 @@ hey i wonder if i can use this for school...
 
 ## building
 
-ensure you have all the listed dependancies installed or have all the 
+sqlite3 is included with the project since its public domain code so
 
-.c and .h files placed in `/deps/`!
+hip hip hurrah for that! if not then you will need to put the files:
 
-sqlite3 is already included in `/deps/` so dont worry about that one.
+- sqlite3.c
+- sqlite3.h
 
-wait why and i telling you all this all the required dependancies are
-
-packaged with this project lmao. hip hip hoorah for public domain code!
+into the `/deps/` folder.
 
 ### windows
 
