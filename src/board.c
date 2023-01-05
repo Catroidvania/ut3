@@ -32,11 +32,9 @@ int validMove(Coord c, Coord lc, Game g) {
 	if (g.board[c.Mx][c.My].Minor[c.mx][c.my] == BOARDEMPTY) {
 		if (c.Mx == lc.mx && c.My == lc.my) {
 			return 1;
-		} else if (majorScored(g.board[lc.mx][lc.my]) != BOARDEMPTY) {
+		} else if (majorFilled(g.board[lc.mx][lc.my])) {
 			return 1;
 		} else if (lc.Mx < 0 || lc.My < 0 || lc.mx < 0 || lc.my < 0) {
-			return 1;
-		} else if (majorTied(g.board[lc.mx][lc.my])) {
 			return 1;
 		}
 	}
@@ -78,7 +76,7 @@ int gameTied(Game g) {
 	return 1;
 }
 
-int majorTied(Major m) {
+int majorFilled(Major m) {
 	int mx, my;
 	
 	for (mx = 0; mx < 3; mx++) {
@@ -92,6 +90,12 @@ int majorTied(Major m) {
 }
 
 char majorScored(Major m) {
+	/*
+	this is only needed for gameWon()
+	majorFilled() does this but less verbose
+	nvm its used in fillScored() so scoring
+	on the last empty square still works
+	*/
 	int minorx, minory;
 	char c = m.Minor[0][0];
 		
@@ -164,7 +168,7 @@ void drawBoard(Game g) {
 
 	for (majory = 2; majory >= 0; majory--) { // needs to be draw y first lmao
 	for (minory = 2; minory >= 0; minory--) {
-		if (minorx == 1) {
+		if (minory == 1) {
 			printf("%d %d  ", majory + 1, minory + 1);
 		} else {
 			printf("| %d  ", minory + 1);
@@ -196,6 +200,8 @@ void initBoard(Game *g) {
 
 	g->turn = 1;
 
+	g->moverecord[0] = 'r';
+	
 	for (i = 0; i <= 81 * 4; i++) {
 		g->moverecord[i] = BOARDEMPTY;
 	}

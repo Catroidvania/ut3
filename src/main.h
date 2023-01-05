@@ -8,18 +8,17 @@ catroidvania 27 12 22
 
 #include <stdio.h>
 
-extern char P1CHAR;
-extern char P2CHAR;
+#define DBNAME "SAVES.db"
+#define P1CHAR 'x'
+#define P2CHAR 'o'
 
 int waitForConfirm(void);
 int slotFull(int);
 
 void initSaveFile(void);
 void waitForInput(void);
+void displaySaves(void);
 void ffgets(char*, int, FILE*);
 
 #endif
 
-#ifndef DBNAME
-#define DBNAME "SAVES.db"
-#endif

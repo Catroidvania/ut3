@@ -21,15 +21,12 @@ int main() {
 
 	char menu, strat, turn, winner, cslot;
 	char input[4];
-
-	char P1CHAR = 'x';
-	char P2CHAR = 'o';
 	
 	int run = 1, state = 1, saved = 0;
 	int i, slot;
 	
 	initSaveFile();
-	initCpuRandom();
+	initCpu();
 
 	while (run) {
 		printf("%c[2J%c[;H", (char)27, (char)27);
@@ -38,6 +35,7 @@ int main() {
 			printf("\nWhat would you like to do?:\n");
 			printf("(p)lay a game\n");
 			printf("(l)oad a save\n");
+			printf("(d)isplay saves\n");
 			printf("(q)uit the program\n");
 			printf("Bracketed letter of option: ");
 			ffgets(&menu, 1, stdin);
@@ -50,8 +48,8 @@ int main() {
 				ffgets(&turn, 1, stdin);
 
 				printf("\nWhat strategy should the computer use?:\n");
-				printf("(r)andom\n");
-				printf("(s)tall - not yet implemented!\n");
+				printf("(r)andom - plays random moves\n");
+				printf("(s)tall  - always sends to the least played major\n");
 				printf("(f)ocus - not yet implemented!\n");
 				printf("(l)ogan - not yet implemented!\n");
 				printf("Bracketed letter of options: ");
@@ -64,7 +62,11 @@ int main() {
 				*/
 				ffgets(&strat, 1, stdin);
 
-				strat = 'r';  /* to remove */
+				if (strat != 'r' && strat != 's') {
+					printf("Invalid strategy! Defaulting to random...\n");
+					strat = 'r';
+					waitForInput();
+				}
 	
 				initBoard(&game);
 				
@@ -103,6 +105,10 @@ int main() {
 
 				saved = 1;
 				state = 2;
+			} else if (menu == 'd') {
+				displaySaves();
+				waitForInput();
+				continue;
 			} else if (menu == 'q') {
 				break;
 			} else {
@@ -144,16 +150,14 @@ int main() {
 				theres probably some logic combination that works better than this
 				*/
 				if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
-					if (majorScored(game.board[move.mx][move.my]) != BOARDEMPTY ||
-						majorTied(game.board[cpu.mx][cpu.my])) {
+					if (majorFilled(game.board[cpu.mx][cpu.my])) {
 						printf("Play anywhere!\n");
 					} else {
 						printf("%c%i%c%i\n", (char)move.Mx + 97, move.My + 1,
 											 (char)move.mx + 97, move.my + 1);
 					}
 				} else if (cpu.Mx >= 0 && cpu.My >= 0) {
-					if (majorScored(game.board[cpu.mx][cpu.my]) != BOARDEMPTY ||
-						majorTied(game.board[cpu.mx][cpu.my])) {
+					if (majorFilled(game.board[cpu.mx][cpu.my])) {
 						printf("Play anywhere!\n");
 					} else {
 						printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
@@ -175,6 +179,8 @@ int main() {
 			if (turn == P2CHAR && state == 2) {
 				if (strat == 'r') {
 					cpu = randomStrat(move, game);
+				} else if (strat == 's') {
+					cpu = stallStrat(move, game);
 				} else {
 					printf("\nNot yet implemented!\n");
 					waitForInput();
@@ -392,6 +398,52 @@ void initSaveFile() {
 	
 	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
+	}
+
+	sqlite3_finalize(stmt);
+
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+
+	sqlite3_close(db);
+}
+
+void displaySaves() {
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+
+	int i, rc;
+	
+	char *record;
+	char *sql = "SELECT * FROM saves;";
+
+	sqlite3_open(DBNAME, &db);
+
+	if (db == NULL) {
+		printf("\nFailed to open saves database!\n");
+		waitForInput();
+		return;
+	}
+
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+
+	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	
+	while (rc != SQLITE_DONE) {
+		rc = sqlite3_step(stmt);
+		if (rc == SQLITE_ROW) {
+			record = (char*)sqlite3_column_blob(stmt, 1);
+			printf("SLOT: %d | MOVES: ", sqlite3_column_int(stmt, 0));
+			for (i = 1; i <= (81 * 4) + 1; i++) {
+				if (record[i] != BOARDEMPTY) {
+					printf("%c", record[i]);
+				}
+
+				if (i != 1 && i % 4 == 1) {
+					printf(" ");
+				}
+			}
+			printf("\n");
+		}
 	}
 
 	sqlite3_finalize(stmt);

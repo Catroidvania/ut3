@@ -8,6 +8,8 @@ catroidvania 27 12 22
 
 #include "main.h"
 
+#define BOARDEMPTY '.'
+
 struct Coord {
 	// Major x, Major y, minor x, minor y
 	int Mx, My, mx, my;
@@ -34,7 +36,7 @@ Coord coordToBoardIndex(char[4]);
 int validMove(Coord, Coord, Game);
 int fillScored(Game*);
 int gameTied(Game);
-int majorTied(Major);
+int majorFilled(Major);
 
 char gameWon(Game);
 char majorScored(Major);
@@ -52,6 +54,4 @@ void addSave(int, Game);
 
 #endif
 
-#ifndef BOARDEMPTY
-#define BOARDEMPTY '.'
-#endif
+
