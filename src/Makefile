@@ -9,7 +9,7 @@ all : $(OBJS)
 	@echo "Sources compiled!"
 
 %.o : %.c
-	@$(CC) -c $<
+	@$(CC) -I../deps -c $<
 
 clean :
 	@echo "Removing source object files..."
