@@ -29,7 +29,7 @@ int main() {
 	initCpu();
 
 	while (run) {
-		printf("%c[2J%c[;H", (char)27, (char)27);
+		printf("%c[2J%c[;H\n", (char)27, (char)27);
 
 		if (state == 1) {
 			printf("\nWhat would you like to do?:\n");

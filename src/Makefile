@@ -2,6 +2,7 @@
 # catroidvania 27 12 22
 
 CC = gcc
+DEPSDIR = ../deps
 OBJS = board.o opponent.o main.o
 
 all : $(OBJS)
@@ -9,7 +10,7 @@ all : $(OBJS)
 	@echo "Sources compiled!"
 
 %.o : %.c
-	@$(CC) -I../deps -c $<
+	@$(CC) -I{DEPSDIR} -c $<
 
 clean :
 	@echo "Removing source object files..."
