@@ -50,8 +50,7 @@ int main() {
 				printf("\nWhat strategy should the computer use?:\n");
 				printf("(r)andom - plays random moves\n");
 				printf("(s)tall  - always sends to the least played major\n");
-				printf("(f)ocus - not yet implemented!\n");
-				printf("(l)ogan - not yet implemented!\n");
+				printf("(l)ogan  - uses send priority!\n");
 				printf("Bracketed letter of options: ");
 				/*
 				other strats to add?? maybe??
@@ -62,7 +61,7 @@ int main() {
 				*/
 				ffgets(&strat, 1, stdin);
 
-				if (strat != 'r' && strat != 's') {
+				if (strat != 'r' && strat != 's' && strat != 'l') {
 					printf("Invalid strategy! Defaulting to random...\n");
 					strat = 'r';
 					waitForInput();
@@ -181,6 +180,8 @@ int main() {
 					cpu = randomStrat(move, game);
 				} else if (strat == 's') {
 					cpu = stallStrat(move, game);
+				} else if (strat == 'l') {
+					cpu = loganStrat(move, game);
 				} else {
 					printf("\nNot yet implemented!\n");
 					waitForInput();

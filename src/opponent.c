@@ -10,8 +10,37 @@ catroidvania 27 12 22
 #include "opponent.h"
 #include "board.h"
 
+int countChars(Major m, char match) {
+	int mx, my;
+	int score = 0;
+
+	for (mx = 0; mx < 3; mx++) {
+	for (my = 0; my < 3; my++) {
+		if (m.Minor[mx][my] == match) {
+			score++;
+		}
+	}}
+	
+	return score;
+}
+
 void initCpu() {
 	srand((unsigned int)time(NULL));
+}
+
+void dummyMajor(Coord *c, Game g) {
+	int Mx, My;
+
+	for (Mx = 0; Mx < 3; Mx++) {
+	for (My = 0; My < 3; My++) {
+		if (g.board[Mx][My].Minor[c->mx][c->my] == BOARDEMPTY) {
+			c->Mx = Mx;
+			c->My = My;
+			return;
+		}
+	}}
+	c->Mx = -1;
+	c->My = -1;
 }
 
 Coord randomStrat(Coord lm, Game g) {
@@ -62,22 +91,14 @@ Coord stallStrat(Coord lm, Game g) {
 		cpu.My = lm.my;
 	}
 
-	for (Mx = 0; Mx < 3; Mx++) {
-	for (My = 0; My < 3; My++) {
-		minscores[Mx][My] = 0;
-		maxscores[Mx][My] = 0;
-		copymin[Mx][My] = 0;
 	for (mx = 0; mx < 3; mx++) {
 	for (my = 0; my < 3; my++) {
-		if (g.board[Mx][My].Minor[mx][my] != BOARDEMPTY) {
-			minscores[Mx][My]++;
-			copymin[Mx][My]++;
+		minscores[mx][my] = 9 - countChars(g.board[mx][my], BOARDEMPTY);
+		copymin[mx][my] = 9 - countChars(g.board[mx][my], BOARDEMPTY);
+		if (findmajor) {
+			maxscores[mx][my] = countChars(g.board[mx][my], P2CHAR);
 		}
-
-		if (findmajor && g.board[Mx][My].Minor[mx][my] == P2CHAR) {
-			maxscores[Mx][My]++;
-		}
-	}}}}
+	}}
 
 	do {
 		if (findmajor) {
@@ -138,7 +159,163 @@ Coord stallStrat(Coord lm, Game g) {
 
 	} while (!validMove(cpu, lm, g));
 
-	printf("%d: %d %d\n", i, cpu.mx, cpu.my);
+	return cpu;
+}
+
+Coord loganStrat(Coord lm, Game g) {
+	Coord cpu;
+
+	int scores[3][3], selfscores[3][3];
+	int Mx, My, mx, my, x, y, plays, findmajor;
+
+	if (lm.mx < 0 || lm.my < 0) {
+		findmajor = 1;
+	} else if (majorFilled(g.board[lm.mx][lm.my])) {
+		findmajor = 1;
+	} else {
+		findmajor = 0;
+		cpu.Mx = lm.mx;
+		cpu.My = lm.my;
+	}
+
+	for (Mx = 0; Mx < 3; Mx++) {
+	for (My = 0; My < 3; My++) {
+		scores[Mx][My] = 9 - countChars(g.board[Mx][My], BOARDEMPTY);
+		if (findmajor) {
+			selfscores[Mx][My] = countChars(g.board[Mx][My], P2CHAR);
+		}
+	}}
+
+	do {
+		x = 1;
+		y = 1;
+
+		/*
+		corners
+		*/
+		plays = 10;
+		for (Mx = 0; Mx < 3; Mx += 2) {
+		for (My = 0; My < 3; My += 2) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (findmajor) {
+				dummyMajor(&cpu, g);
+			}
+			if (validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+		
+		/* 
+		edges 
+		*/
+		for (Mx = 0; Mx < 2; Mx++) {
+		for (My = 0; My < 2; My++) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (findmajor) {
+				dummyMajor(&cpu, g);
+			}
+			if (Mx != My && validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+		
+		for (Mx = 1; Mx < 3; Mx++) {
+		for (My = 1; My < 3; My++) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (findmajor) {
+				dummyMajor(&cpu, g);
+			}
+			if (Mx != My && validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+
+		cpu.mx = x;
+		cpu.my = y;
+	
+		if (findmajor) {
+
+			/* 
+			edges 
+			*/
+			plays = -1;
+			for (Mx = 0; Mx < 2; Mx++) {
+			for (My = 0; My < 2; My++) {
+				cpu.Mx = Mx;
+				cpu.My = My;
+				if (Mx != My && validMove(cpu, lm, g) &&
+				   (selfscores[Mx][My] > plays ||
+				   (rand() % 2 && selfscores[Mx][My] == plays))) {
+					plays = selfscores[Mx][My];
+					x = Mx;
+					y = My;
+				}
+			}}
+
+			for (Mx = 1; Mx < 3; Mx++) {
+			for (My = 1; My < 3; My++) {
+				cpu.Mx = Mx;
+				cpu.My = My;
+				if (Mx != My && validMove(cpu, lm, g) &&
+				   (selfscores[Mx][My] > plays ||
+				   (rand() % 2 && selfscores[Mx][My] == plays))) {
+					plays = selfscores[Mx][My];
+					x = Mx;
+					y = My;
+				}
+			}}
+
+			/*
+			corners
+			*/
+			for (Mx = 0; Mx < 3; Mx += 2) {
+			for (My = 0; My < 3; My += 2) {
+				cpu.Mx = Mx;
+				cpu.My = My;
+				if (validMove(cpu, lm, g) &&
+				   (selfscores[Mx][My] > plays ||
+				   (rand() % 2 && selfscores[Mx][My] == plays))) {
+					plays = selfscores[Mx][My];
+					x = Mx;
+					y = My;
+				}
+			}}
+
+			/*
+			centre
+			*/
+			cpu.Mx = 1;
+			cpu.My = 1;
+			if (validMove(cpu, lm, g)) {
+				x = 1;
+				y = 1;
+			}
+			/*
+			having it do dummyMajor for minor plays doesnt work as well
+			as doing a dummyMinor for major so it can prioritise centre
+			over sending to a preferred major :// TODO later ig it works
+			now so i dont want to touch it lol
+			*/
+
+			cpu.Mx = x;
+			cpu.My = y;
+		}
+	} while (!validMove(cpu, lm, g));
 
 	return cpu;
 }
