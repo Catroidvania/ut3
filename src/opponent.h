@@ -10,7 +10,7 @@ catroidvania 27 12 22
 #include "board.h"
 
 void initCpu(void);
-void dummyMajor(Coord*, Game);
+void dummyMinor(Coord*, Game);
 
 int scoresEmpty(int*);
 int countChars(Major, char);

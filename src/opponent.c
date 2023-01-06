@@ -28,19 +28,19 @@ void initCpu() {
 	srand((unsigned int)time(NULL));
 }
 
-void dummyMajor(Coord *c, Game g) {
+void dummyMinor(Coord *c, Game g) {
 	int Mx, My;
 
 	for (Mx = 0; Mx < 3; Mx++) {
 	for (My = 0; My < 3; My++) {
-		if (g.board[Mx][My].Minor[c->mx][c->my] == BOARDEMPTY) {
-			c->Mx = Mx;
-			c->My = My;
+		if (g.board[c->Mx][c->My].Minor[Mx][My] == BOARDEMPTY) {
+			c->mx = Mx;
+			c->my = My;
 			return;
 		}
 	}}
-	c->Mx = -1;
-	c->My = -1;
+	c->mx = -1;
+	c->my = -1;
 }
 
 Coord randomStrat(Coord lm, Game g) {
@@ -187,67 +187,6 @@ Coord loganStrat(Coord lm, Game g) {
 	}}
 
 	do {
-		x = 1;
-		y = 1;
-
-		/*
-		corners
-		*/
-		plays = 10;
-		for (Mx = 0; Mx < 3; Mx += 2) {
-		for (My = 0; My < 3; My += 2) {
-			cpu.mx = Mx;
-			cpu.my = My;
-			if (findmajor) {
-				dummyMajor(&cpu, g);
-			}
-			if (validMove(cpu, lm, g) &&
-			   (scores[Mx][My] < plays ||
-			   (rand() % 2 && scores[Mx][My] == plays))) {
-				plays = scores[Mx][My];
-				x = Mx;
-				y = My;
-			}
-		}}
-		
-		/* 
-		edges 
-		*/
-		for (Mx = 0; Mx < 2; Mx++) {
-		for (My = 0; My < 2; My++) {
-			cpu.mx = Mx;
-			cpu.my = My;
-			if (findmajor) {
-				dummyMajor(&cpu, g);
-			}
-			if (Mx != My && validMove(cpu, lm, g) &&
-			   (scores[Mx][My] < plays ||
-			   (rand() % 2 && scores[Mx][My] == plays))) {
-				plays = scores[Mx][My];
-				x = Mx;
-				y = My;
-			}
-		}}
-		
-		for (Mx = 1; Mx < 3; Mx++) {
-		for (My = 1; My < 3; My++) {
-			cpu.mx = Mx;
-			cpu.my = My;
-			if (findmajor) {
-				dummyMajor(&cpu, g);
-			}
-			if (Mx != My && validMove(cpu, lm, g) &&
-			   (scores[Mx][My] < plays ||
-			   (rand() % 2 && scores[Mx][My] == plays))) {
-				plays = scores[Mx][My];
-				x = Mx;
-				y = My;
-			}
-		}}
-
-		cpu.mx = x;
-		cpu.my = y;
-	
 		if (findmajor) {
 
 			/* 
@@ -258,6 +197,7 @@ Coord loganStrat(Coord lm, Game g) {
 			for (My = 0; My < 2; My++) {
 				cpu.Mx = Mx;
 				cpu.My = My;
+				dummyMinor(&cpu, g);
 				if (Mx != My && validMove(cpu, lm, g) &&
 				   (selfscores[Mx][My] > plays ||
 				   (rand() % 2 && selfscores[Mx][My] == plays))) {
@@ -271,6 +211,7 @@ Coord loganStrat(Coord lm, Game g) {
 			for (My = 1; My < 3; My++) {
 				cpu.Mx = Mx;
 				cpu.My = My;
+				dummyMinor(&cpu, g);
 				if (Mx != My && validMove(cpu, lm, g) &&
 				   (selfscores[Mx][My] > plays ||
 				   (rand() % 2 && selfscores[Mx][My] == plays))) {
@@ -287,6 +228,7 @@ Coord loganStrat(Coord lm, Game g) {
 			for (My = 0; My < 3; My += 2) {
 				cpu.Mx = Mx;
 				cpu.My = My;
+				dummyMinor(&cpu, g);
 				if (validMove(cpu, lm, g) &&
 				   (selfscores[Mx][My] > plays ||
 				   (rand() % 2 && selfscores[Mx][My] == plays))) {
@@ -301,20 +243,67 @@ Coord loganStrat(Coord lm, Game g) {
 			*/
 			cpu.Mx = 1;
 			cpu.My = 1;
+			dummyMinor(&cpu, g);
 			if (validMove(cpu, lm, g)) {
 				x = 1;
 				y = 1;
 			}
-			/*
-			having it do dummyMajor for minor plays doesnt work as well
-			as doing a dummyMinor for major so it can prioritise centre
-			over sending to a preferred major :// TODO later ig it works
-			now so i dont want to touch it lol
-			*/
 
 			cpu.Mx = x;
 			cpu.My = y;
 		}
+		x = 1;
+		y = 1;
+
+		/*
+		corners
+		*/
+		plays = 10;
+		for (Mx = 0; Mx < 3; Mx += 2) {
+		for (My = 0; My < 3; My += 2) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+		
+		/* 
+		edges 
+		*/
+		for (Mx = 0; Mx < 2; Mx++) {
+		for (My = 0; My < 2; My++) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (Mx != My && validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+		
+		for (Mx = 1; Mx < 3; Mx++) {
+		for (My = 1; My < 3; My++) {
+			cpu.mx = Mx;
+			cpu.my = My;
+			if (Mx != My && validMove(cpu, lm, g) &&
+			   (scores[Mx][My] < plays ||
+			   (rand() % 2 && scores[Mx][My] == plays))) {
+				plays = scores[Mx][My];
+				x = Mx;
+				y = My;
+			}
+		}}
+
+		cpu.mx = x;
+		cpu.my = y;
+	
 	} while (!validMove(cpu, lm, g));
 
 	return cpu;

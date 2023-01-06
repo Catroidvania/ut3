@@ -126,7 +126,7 @@ int main() {
 
 				emptyCoord(&move);
 				emptyCoord(&cpu);
-			} else if (gameTied(game)) {
+			} else if (state == 2 && gameTied(game)) {
 				state = 3;
 				winner = 't';
 
