@@ -4,6 +4,12 @@
 CC = gcc
 OBJS = sqlite3.o
 
+ifeq ($(OS),Windows_NT)
+CLEAN = del
+else
+CLEAN = rm
+endif
+
 all : $(OBJS)
 	@echo "Compiling dependancies..."
 	@echo "Dependancies compiled!"
@@ -13,6 +19,6 @@ all : $(OBJS)
 
 clean :
 	@echo "Removing dependancies object files..."
-	@rm $(OBJS)
+	@$(CLEAN) $(OBJS)
 	@echo "Dependancies object files removed!"
 

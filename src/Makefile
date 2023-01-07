@@ -4,6 +4,12 @@
 CC = gcc
 OBJS = board.o opponent.o main.o
 
+ifeq ($(OS),Windows_NT)
+CLEAN = del
+else
+CLEAN = rm
+endif
+
 all : $(OBJS)
 	@echo "Compiling sources..."
 	@echo "Sources compiled!"
@@ -13,6 +19,6 @@ all : $(OBJS)
 
 clean :
 	@echo "Removing source object files..."
-	@rm $(OBJS)
+	@$(CLEAN) $(OBJS)
 	@echo "Source object files removed!"
 

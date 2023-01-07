@@ -92,6 +92,7 @@ int main() {
 				}
 
 				initBoard(&game);
+				strat = 'r';
 				
 				emptyCoord(&move);
 				emptyCoord(&cpu);
@@ -183,9 +184,9 @@ int main() {
 				} else if (strat == 'l') {
 					cpu = loganStrat(move, game);
 				} else {
-					printf("\nNot yet implemented!\n");
+					printf("\nInvalid Strategy!\n");
 					waitForInput();
-					game.turn = 0;
+					turn = P1CHAR;
 					continue;
 				}
 
