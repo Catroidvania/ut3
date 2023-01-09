@@ -119,20 +119,9 @@ but dont let that scare you its really just a three by three grid of
 
 regular tic tac toe boards:
 
-|o| | | | |o| | | | |o|
-|-|-|-| |-|-|-| |-|-|-|
-| | | | | |x| | | | |x|
-| |x| | | | | | | | | |
 
-| | | | | | | | | | | |
-|-|-|-| |-|-|-| |-|-|-|
-|o| | | | |x| | |x| |o|
-|x| | | | | |o| | | | |
+![Empty board](./img/board.png "An empty board")
 
-|x| | | | |x| | | | |x|
-|-|-|-| |-|-|-| |-|-|-|
-| | | | | | | | | | | |
-|o| | | | |o| | | | |o|
 
 this program uses what i call major-minor notation for its coordinates
 
