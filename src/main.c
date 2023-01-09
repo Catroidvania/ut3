@@ -1,13 +1,16 @@
-/*
-main file for catroidvanias ultimate tic tac toe program 
-created 27 12 22
+/*****************************************************************************
+**
+** main.c 
+** created 27 12 22
+** by catroidvania
+**
+******************************************************************************
 */
 
 #include <stdio.h>
 
 /*
-now that i think about it i shouldve just built sqlite3
-myself i dont need all eight million constants lol
+** i dont need all the features in sqlite3 so i may make my own build of it
 */
 #include "sqlite3.h"
 
@@ -15,6 +18,14 @@ myself i dont need all eight million constants lol
 #include "board.h"
 #include "opponent.h"
 
+/*
+** main()
+**
+** main handles the input and output for the game as well as initialising and
+** storing game information like the board and player / cpu moves
+**
+** overall program is not as optimised as it could be but i am a c newb rn lol
+*/
 int main() {
 	Game game;
 	Coord move, cpu;
@@ -24,22 +35,50 @@ int main() {
 	
 	int run = 1, state = 1, saved = 0;
 	int i, slot;
-	
+	/*
+	** both are called here so they only run once since there is no need for
+	** to verify the existance of the save database multiple times and there
+	** calling initCpu() more than once would change the seed for srand()
+	*/
 	initSaveFile();
 	initCpu();
 
+	/*
+	** main game loop
+	*/
 	while (run) {
+		/*
+		** ansi escape codes that clears the screen and moves the cursor to
+		** the top left corner as well as printing a newline as windows
+		** systems below windows ten do not have built in escape code support
+		*/
 		printf("%c[2J%c[;H\n", (char)27, (char)27);
 
+		/*
+		** state one is the main menu and there is no state zero
+		*/
 		if (state == 1) {
+			/*
+			** replacing printf()s without bindings with puts() might improve
+			** optimisation although the compiler might already handle that
+			** 
+			** i could go read the assembly but im not sure optimisation is
+			** that nessesary for this project
+			*/
 			printf("\nWhat would you like to do?:\n");
 			printf("(p)lay a game\n");
 			printf("(l)oad a save\n");
 			printf("(d)isplay saves\n");
 			printf("(q)uit the program\n");
 			printf("Bracketed letter of option: ");
+			/*
+			** information about ffgets() is found below main()
+			*/
 			ffgets(&menu, 1, stdin);
 
+			/*
+			** menu for starting a new game
+			*/
 			if (menu == 'p') {
 				printf("\nWho goes first?:\n");
 				printf("(p)layer\n");
@@ -52,15 +91,13 @@ int main() {
 				printf("(s)tall  - always sends to the least played major\n");
 				printf("(l)ogan  - uses send priority!\n");
 				printf("Bracketed letter of options: ");
-				/*
-				other strats to add?? maybe??
-				copycat - tries to copy your last move
-				fool - always sends to your most controlled major
-				brute force - ew i have to optimise
-				hmm
-				*/
 				ffgets(&strat, 1, stdin);
 
+				/*
+				** there was originally going to be a brute force strategy but
+				** it would have been very hard to balance as it would play
+				** perfectly as well as not being human followable
+				*/
 				if (strat != 'r' && strat != 's' && strat != 'l') {
 					printf("Invalid strategy! Defaulting to random...\n");
 					strat = 'r';
@@ -72,6 +109,10 @@ int main() {
 				emptyCoord(&move);
 				emptyCoord(&cpu);
 
+				/*
+				** the turn counter is tracked as a char for convenience
+				** note that this turn is not the same as game.turn
+				*/
 				if (turn == 'c') {
 					turn = P2CHAR;
 				} else {
@@ -80,6 +121,12 @@ int main() {
 
 				state = 2;
 
+			/*
+			** menu for loading a save from the database which is still broken
+			** on my windows seven machine and i cannot for the life of me
+			** figure out why since sqlite3 seems to have a mind of its own
+			** but knowing the age of the machine it could be a hardware issue
+			*/
 			} else if (menu == 'l') {
 				printf("\nLoad which slot?: ");
 				ffgets(&cslot, 1, stdin);
@@ -91,6 +138,10 @@ int main() {
 					continue;
 				}
 
+				/*
+				** default initialisation so in the case loading a save fails
+				** it will start a new game with the random strategy instead
+				*/
 				initBoard(&game);
 				strat = 'r';
 				
@@ -103,38 +154,83 @@ int main() {
 
 				strat = game.moverecord[0];
 
+				/*
+				** saved is checked even though no save is made since the game
+				** is already saved to the database at this point and it makes
+				** testing saving and loading less of a hassle
+				*/
 				saved = 1;
 				state = 2;
+
+			/*
+			** displays all saves stored in the database
+			*/
 			} else if (menu == 'd') {
 				displaySaves();
 				waitForInput();
 				continue;
+
+			/*
+			** quit program where the use of break invalidates the need for
+			** the run variable although it could come in handy later
+			*/
 			} else if (menu == 'q') {
 				break;
+
+			/*
+			** in case an invalid option is given
+			** because you can never trust the user to play nicely
+			*/
 			} else {
 				printf("Please input a valid option!\n");
 				waitForInput();
 			}
+
+		/*
+		** handles game states with two being game in progress and three being
+		** game finished
+		*/
 		} else if (state > 1) {
 			if (gameWon(game) != BOARDEMPTY && state == 2) {
 				winner = gameWon(game);
 				state = 3;
 
+				/*
+				** an extra move is appended to the move record as the program
+				** is built around the idea that you can only save on the 
+				** players turn and therefore must always end on a cpu move
+				**
+				** this move accounts for that but is ignored as it is both an
+				** invalid move and the game would already be over
+				*/
 				if (winner == P1CHAR) {
 					move = coordToBoardIndex("d4d4");
 					recordMove(move, &game, strat);
 				}
 
+				/*
+				** moves are cleared so no new moves can be played after the
+				** game is over although im not really sure this is even needed
+				** anymore since all relavant playToBoard()s cehck for state
+				*/
 				emptyCoord(&move);
 				emptyCoord(&cpu);
 			} else if (state == 2 && gameTied(game)) {
 				state = 3;
+				/*
+				** this char represents a tie which i should really change to
+				** something like the null char for possible customisation
+				*/
 				winner = 't';
 
 				emptyCoord(&move);
 				emptyCoord(&cpu);
 			}
 
+			/*
+			** these if statements make sure certain things only run when the
+			** game is ongoing as they would not make sense in a game over
+			*/
 			if (state == 2) {
 				printf("Turn %d: ", game.turn);
 
@@ -147,7 +243,8 @@ int main() {
 				printf("Previous move: ");
 
 				/*
-				theres probably some logic combination that works better than this
+				** somewhat verbose code to print the last move made to help
+				** remember which majors are legal to play in
 				*/
 				if ((turn == P2CHAR) && (move.Mx >= 0 && move.My >= 0)) {
 					if (majorFilled(game.board[cpu.mx][cpu.my])) {
@@ -166,16 +263,26 @@ int main() {
 				} else {
 					printf("Play anywhere!\n");
 				}
+			/*
+			** these happen during state three which represents a game end
+			*/
 			} else if (state == 3) {
 				if (winner == P1CHAR) {
 					printf("You win! Way to go Ultimate Tic Tac Toer!\n");
 				} else if (winner == P2CHAR) {
 					printf("You lose! Better luck next time!\n");
+				/*
+				** wait i guess the tie character didnt actually matter lol
+				*/
 				} else {
 					printf("Tie! Nobody wins!\n");
 				}
 			}
 		
+			/*
+			** gets the cpu move which i feel like could be made less verbose
+			** by using a function pointer defined during game initialisation
+			*/
 			if (turn == P2CHAR && state == 2) {
 				if (strat == 'r') {
 					cpu = randomStrat(move, game);
@@ -193,6 +300,11 @@ int main() {
 				playToBoard(cpu, &game, P2CHAR);
 				recordMove(cpu, &game, strat);
 
+				/*
+				** has to be called here so the text displays in the correct
+				** order even though i find myself looking at the last move
+				** most of the time instead of the below the board
+				*/
 				drawBoard(game);
 
 				printf("\nThe computer played: ");
@@ -213,7 +325,14 @@ int main() {
 
 			drawBoard(game);
 
+			/*
+			** stuff for players turn
+			*/
 			printf("\nWhat would you like to do?:\n");
+			/*
+			** certain menu options are only displayed and are valid when the
+			** game is still ongoing like playing moves
+			*/
 			if (state == 2) {
 				printf("(p)lay a move\n");
 			}
@@ -226,6 +345,10 @@ int main() {
 			printf(": ");
 			ffgets(&input[0], 4, stdin);
 
+			/*
+			** explicit play move option in case putting the major and minor
+			** coordinates is too hard for the user
+			*/
 			if (input[0] == 'p' && state == 2) {
 				printf("Major coordinate?: ");
 				ffgets(&input[0], 2, stdin);
@@ -239,6 +362,10 @@ int main() {
 					waitForInput();
 					continue;
 				}
+
+			/*
+			** menu for saving the game
+			*/
 			} else if (input[0] == 's') {
 				printf("\nSlot to save to: ");
 				ffgets(&cslot, 1, stdin);
@@ -253,6 +380,10 @@ int main() {
 				printf("\nConfirm saving to slot %d?\n", slot);
 				printf("(Any data in slot %d will be overwritten!)", slot);
 				
+				/*
+				** even when this block does not show any sign of error the
+				** database still does not get written to sometimes
+				*/
 				if (waitForConfirm()) {
 					addSave(slot, game);
 					printf("\nGame saved to slot %d!\n", slot);
@@ -263,7 +394,14 @@ int main() {
 
 				waitForInput();
 				continue;
+
+			/*
+			** option to return to the main menu without saving
+			*/
 			} else if (input[0] == 'q') {
+				/*
+				** reminder to the user and gives them one last chance to save
+				*/
 				if (!saved) {
 					printf("\nAre you sure you want to quit?\n");
 					printf("(Any unsaved data will be lost!)");
@@ -276,6 +414,10 @@ int main() {
 				}
 
 				continue;
+
+			/*
+			** if the option given is a valid move then play it
+			*/
 			} else if (validMove(coordToBoardIndex(input), cpu, game)) {
 				move = coordToBoardIndex(input);
 			} else {
@@ -297,19 +439,20 @@ int main() {
 			turn = P2CHAR;
 			saved = 0;
 			
-			/*
-			TODO
-			extra cpu starts
-			explosions
-			documentation / commenting
-			*/
 		}
 	}
 	
+	/*
+	** end of main and also program exit point
+	*/
 	printf("Bye bye!\n");
 	return 0;
 }
 
+/*
+** function that gets a yes no response from the user and returns and integer
+** that represents true or false
+*/
 int waitForConfirm() {
 	char confirm;
 
@@ -323,6 +466,10 @@ int waitForConfirm() {
 	return 0;
 }
 
+/*
+** function that check is a given slot is full so we dont try and insert when
+** an update is needed
+*/
 int slotFull(int slot) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
@@ -337,6 +484,10 @@ int slotFull(int slot) {
 		return 1;
 	}
 
+	/*
+	** doesnt save to database unless i explicitly start and end a transaction
+	** for some reason but doesnt seem to be the issue on the win32 version
+	*/
 	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
