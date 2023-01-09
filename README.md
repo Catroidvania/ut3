@@ -108,10 +108,9 @@ if you know how to play tic tac toe you can play ultimate tic tac toe!
 
 as opposed to the three by three tic tac toe board:
 
-|x|o|x|
-|-|-|-|
-| |o| |
-| | |x|
+
+![A regular board](./img/boardregular.png "A normal tic tac toe board")
+
 
 the ultimate tic tac toe board is nine by nine!
 
