@@ -119,20 +119,20 @@ but dont let that scare you its really just a three by three grid of
 
 regular tic tac toe boards:
 
-| | | | | | | | | | | |
+|o| | | | |o| | | | |o|
 |-|-|-| |-|-|-| |-|-|-|
-| | | | | | | | | | | |
-| | | | | | | | | | | |
+| | | | | |x| | | | |x|
+| |x| | | | | | | | | |
 
 | | | | | | | | | | | |
 |-|-|-| |-|-|-| |-|-|-|
-| | | | | | | | | | | |
-| | | | | | | | | | | |
+|o| | | | |x| | |x| |o|
+|x| | | | | |o| | | | |
 
-| | | | | | | | | | | |
+|x| | | | |x| | | | |x|
 |-|-|-| |-|-|-| |-|-|-|
 | | | | | | | | | | | |
-| | | | | | | | | | | |
+|o| | | | |o| | | | |o|
 
 this program uses what i call major-minor notation for its coordinates
 
@@ -142,20 +142,9 @@ board on the larger board and the minor part refering to the position of the
 
 tile inside the regular board so the coords system looks something like this:
 
--   3 . . .  . . .  . . .
-- 3 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
 
--   3 . . .  . . .  . . .
-- 2 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
+![Empty Board](./img/board0.png "An empty board")
 
--   3 . . .  . . .  . . .
-- 1 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
-
--     a b c  a b c  a b c
--       a      b      c
 
 as an example playing to the bottom left in the centre board would be:
 
@@ -171,20 +160,9 @@ now that we have notation done onto the game itself!
 
 the first player starts by playing anywhere on the board
 
--   3 . . .  . . .  . . .
-- 3 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
 
--   3 . . .  . . .  . . .
-- 2 2 . . .  x . .  . . .
--   1 . . .  . . .  . . .
+![One move played](./img/board1.png "Board with one move played")
 
--   3 . . .  . . .  . . .
-- 1 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
-
--     a b c  a b c  a b c
--       a      b      c
 
 here they are represented as `x` and play the move b2a2 (centre middle left)
 
@@ -196,20 +174,9 @@ coordinate of the last move
 
 so the second player has to play in the major a2
 
--   3 . . .  . . .  . . .
-- 3 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
 
--   3 . . .  . . .  . . .
-- 2 2 . o .  x . .  . . .
--   1 . . .  . . .  . . .
+![Two moves played](./img/board2.png "Board with two moves played")
 
--   3 . . .  . . .  . . .
-- 1 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
-
--     a b c  a b c  a b c
--       a      b      c
 
 thus a2b2 is played and so on and on
 
@@ -223,20 +190,9 @@ win the whole game itself
 
 for the sake of explanation lets assume the game has played out to this point
 
--   3 . . .  . . .  . . .
-- 3 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
 
--   3 . . .  . . .  . . .
-- 2 2 . o .  x x x  . o .
--   1 . . .  . . .  . . .
+![About scoring](./img/board3.png "A scored major")
 
--   3 . . .  . . .  . . .
-- 1 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
-
--     a b c  a b c  a b c
--       a      b      c
 
 now that the centre has been won by `x` it is no longer able to be played in
 
@@ -244,20 +200,9 @@ this program represents it like below but you can just draw a big `x` or `o`
 
 over the whole thing on pencil and paper edition
 
--   3 . . .  . . .  . . .
-- 3 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
 
--   3 . . .  x x x  . . .
-- 2 2 . o .  x x x  . o .
--   1 . . .  x x x  . . .
+![Centre is filled](./img/board4.png "Centre scored")
 
--   3 . . .  . . .  . . .
-- 1 2 . . .  . . .  . . .
--   1 . . .  . . .  . . .
-
--     a b c  a b c  a b c
--       a      b      c
 
 now that `x` has scored this means that the next move can be made anywhere
 
@@ -271,20 +216,9 @@ everntually the board starts to fill up and you may find yourself sending or
 
 sent to an already won major
 
--   3 x x x  x x x  x . x
-- 3 2 x x x  x x x  o . .
--   1 x x x  x x x  x o o
 
--   3 o o o  x x x  o o o 
-- 2 2 o o o  x x x  o o o 
--   1 o o o  x x x  o o o
+![Game progressed](./img/board5.png "Late game")
 
--   3 o o x  . . o  o . o
-- 1 2 . . .  x o o  . . x
--   1 x x o  . . x  . . x
-
--     a b c  a b c  a b c
--       a      b      c
 
 lets say `o` plays b1b2 (middle bottom centre) which has already been won and
 
@@ -296,20 +230,9 @@ this continues until one of the players wins enough majors that form a winning
 
 position in a regular tic tac toe game
 
--   3 x x x  x x x  x . x
-- 3 2 x x x  x x x  o . .
--   1 x x x  x x x  x o o
 
--   3 o o o  x x x  o o o 
-- 2 2 o o o  x x x  o o o 
--   1 o o o  x x x  o o o
+![Game over](./img/board6.png "The game is over")
 
--   3 o o o  . . o  x x x
-- 1 2 o o o  x o o  x x x
--   1 o o o  . . x  x x x
-
--     a b c  a b c  a b c
--       a      b      c
 
 now `x` has won in a diagonal line which in normal tic tac toe is a winning
 
