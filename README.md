@@ -2,15 +2,12 @@
 
 _made by catroidvania_
 
-hey i wonder if i can use this for school...
-
 ## dependancies
 
 | name | link |
 |---------|------|
 | Sqlite3 | [Sqlite3](https://www.sqlite.org/index.html) |
-
-## building
+| MinGW | [MinGW-w64](https://www.mingw-w64.org) |
 
 sqlite3 is included with the project since its public domain code so
 
@@ -21,13 +18,29 @@ hip hip hurrah for that! if not then you will need to put the files:
 
 into the `/deps/` folder.
 
+if you are on windows you will need a version of mingw to build the project
+
+the link is included in the table above in the MinGW section just 
+
+navigate to the downloads section and install the version for you system
+
+you can check that it is installed correctly by running the command:
+
+```
+gcc --version
+```
+
+as long as the command is recognised it should work
+
+## building
+
 ### windows
 
-to build on windows you will need either `minGW32` or `minGW-w64` (for
+make sure you have either `minGW32` or `minGW-w64` (for 32bit and 64bit
 
-32bit and 64bit computers respectively) installed. 
+computers respectively) installed. then change directories into `/ut3/` 
 
-then change directories into `/ut3/` and run:
+and run:
 
 ```
 mingw32-make
@@ -45,9 +58,9 @@ ut3
 
 building on unix requires gnu `make` utility as well as `gcc` or another
 
-valid c compiler (you will need to chang the `CC` variable in the Makefile).
+valid c compiler (you will need to change the `CC` variable in the Makefile
 
-change into the `/ut3/` directory and run:
+if youre using another compiler). change into the `/ut3/` directory and run:
 
 ```
 make
@@ -60,6 +73,10 @@ run it with:
 ```
 ./ut3
 ```
+
+## how to play
+
+couldawouldashoulda at the moment
 
 ## finally
 
