@@ -1,84 +1,78 @@
 # ut3 (ultimate tic tac toe)
 
-_made by catroidvania_
-
-## dependancies
-
-| name | link |
-|---------|------|
-| Sqlite3 | <https://www.sqlite.org/index.html> |
-| MinGW (if on windows) | <https://www.mingw-w64.org> |
-| GNU make (if not on windows) | <https://www.gnu.org/software/make/> |
-| a valid c compiler (this project uses GNU gcc) | <https://gcc.gnu.org> |
-
-sqlite3 is included with the project since its public domain code so
-
-hip hip hurrah for that! if not then you will need to put the files:
-
-- sqlite3.c
-- sqlite3.h
-
-into the `/deps/` folder.
-
-if you are on windows you will need a version of mingw to build the project
-
-the link is included in the table above in the MinGW section just 
-
-navigate to the downloads section and install the version for you system
-
-you can check that it is installed correctly by running the command:
-
-```
-gcc --version
-```
-
-as long as the command is recognised it should work
-
-this also means that `gcc` is included with MinGW
-
-this command also works for verifying that `gcc` is installed correctly
+made by catroidvania!
 
 ## building
 
-### windows
+step one of course is downloading the source code
 
-make sure you have either `minGW32` or `minGW-w64` (for 32bit and 64bit
+or you can just use the jank binaries i release sometimes 
 
-computers respectively) installed. then change directories into `/ut3/` 
+though you will have to deal with windows defender and such
 
-and run:
+
+in the future i will probably try cmake or any other kind of more portable
+
+build / compile system
+
+### windows 32 bit
+
+you will need mingw32 installed which can be found here: 
+
+- <https://mingw.osdn.io>
+
+make sure that is installs mingw32-make and gcc
+
+then change into the `ut3-master` directory and run:
 
 ```
 mingw32-make
 ```
 
-if all works right then the executable will be in the `/build/` directory
-
-and you can run it with:
+if all goes well you can run the program created in the `build` directory:
 
 ```
+cd build
 ut3
 ```
 
+### windows 64 bit
+
+you will need mingw64 to build the project
+
+the w64devkit is found here: 
+
+- <https://www.mingw-w64.org/downloads/#w64devkit>
+
+just run the same commands as for linux / macos through the devkit program
+
 ### linux / macos
 
-building on unix requires gnu `make` utility as well as `gcc` or another
+building on linux / macos requires gnu `make` utility as well as `gcc` 
 
-valid c compiler (you will need to change the `CC` variable in the Makefile
+found here:
 
-if youre using another compiler). change into the `/ut3/` directory and run:
+- <https://www.gnu.org/software/make/#download>
+- <https://gcc.gnu.org/install/binaries.html>
+
+move to the `ut3-master` directory and run:
 
 ```
 make
 ```
 
-and then you should find the `ut3` executable in the `/build/` directory.
+and then you should find the `ut3` executable in the `build` directory.
 
 run it with:
 
 ```
+cd build
 ./ut3
 ```
+
+note that i have not been able to test the program on any linux system so uh
+
+have fun
 
 ## documentation
 
@@ -94,7 +88,9 @@ spaghetti code if you need it
 
 ## license
 
-find out more about the MIT license here <https://snyk.io/learn/what-is-mit-license/>
+find out more about the MIT license here: 
+
+- <https://snyk.io/learn/what-is-mit-license/>
 
 ## how to play
 
@@ -244,7 +240,9 @@ ever winning anything or vice versa
 
 if you have trouble reading my instructions the wikipedia article may be of
 
-use: <https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe>
+use: 
+
+- <https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe>
 
 ## finally
 
