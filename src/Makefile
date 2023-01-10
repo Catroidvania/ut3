@@ -4,6 +4,7 @@
 #CC = /opt/local/bin/x86_64-w64-mingw32-gcc
 CC = gcc
 OBJS = board.o opponent.o main.o
+FLAGS = -Os -g -std=c99
 
 ifeq ($(OS),Windows_NT)
 CLEAN = del
@@ -16,7 +17,7 @@ all : $(OBJS)
 	@echo "Sources compiled!"
 
 %.o : %.c
-	@$(CC) -I../deps -c $<
+	@$(CC) $(FLAGS) -I../deps -c $<
 
 clean :
 	@echo "Removing source object files..."

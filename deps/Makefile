@@ -4,6 +4,7 @@
 #CC = /opt/local/bin/x86_64-w64-mingw32-gcc
 CC = gcc
 OBJS = sqlite3.o
+FLAGS = -Os -g -std=c99
 
 ifeq ($(OS),Windows_NT)
 CLEAN = del
@@ -16,7 +17,7 @@ all : $(OBJS)
 	@echo "Dependancies compiled!"
 
 %.o : %.c
-	@$(CC) -c $<
+	@$(CC) $(FLAGS) -c $<
 
 clean :
 	@echo "Removing dependancies object files..."
