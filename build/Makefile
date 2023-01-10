@@ -8,21 +8,24 @@ SRCDIR = src
 DEPDIR = deps
 
 SRCS = board.o opponent.o main.o
-DEPS = sqlite3.o
 
 FINAL = ut3
 SAVES = SAVES.db
 
 ifeq ($(OS),Windows_NT)
 CLEAN = del
+DEPS = sqlite3.dll sqlite3.lib
 else
 CLEAN = rm
+DEPS = sqlite3.o
 endif
 
 all : $(patsubst %,../$(SRCDIR)/%,$(SRCS)) $(patsubst %,../$(DEPDIR)/%,$(DEPS))
 	@echo "Building..."
 	@$(CC) -o $(FINAL) $^
 	@echo "Build complete!"
+
+
 
 clean :
 	@echo "Removing build..."
