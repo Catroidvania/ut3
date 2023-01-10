@@ -4,6 +4,7 @@
 .DS_Store
 *.o
 *.vim
+*.swp
 *.db
 build/*
 !build/Makefile

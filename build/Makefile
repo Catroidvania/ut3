@@ -1,6 +1,7 @@
 # makefile for the ultimate tic tac toe program final build
 # catroidvania 27 12 22
 
+#CC = /opt/local/bin/x86_64-w64-mingw32-gcc
 CC = gcc
 
 SRCDIR = src

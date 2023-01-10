@@ -143,7 +143,6 @@ int main() {
 				** it will start a new game with the random strategy instead
 				*/
 				initBoard(&game);
-				strat = 'r';
 				
 				emptyCoord(&move);
 				emptyCoord(&cpu);
@@ -153,6 +152,12 @@ int main() {
 				playRecordToBoard(&game, &move, &cpu, P1CHAR, P2CHAR);
 
 				strat = game.moverecord[0];
+
+				if (strat != 'r' && strat != 's' && strat != 'l') {
+					printf("Load error! Defaulting to random strategy...\n");
+					strat = 'r';
+					waitForInput();
+				}
 
 				/*
 				** saved is checked even though no save is made since the game

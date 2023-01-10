@@ -1,6 +1,7 @@
 # makefile for the ultimate tic tac toe program source files
 # catroidvania 27 12 22
 
+#CC = /opt/local/bin/x86_64-w64-mingw32-gcc
 CC = gcc
 OBJS = board.o opponent.o main.o
 
