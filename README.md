@@ -2,6 +2,14 @@
 
 made by catroidvania!
 
+latest version v1.0.1
+
+you can find the latest ish release under the releases section on github
+
+if you dont want to build the source code yourself:
+
+- <https://github.com/Catroidvania/ut3/releases>
+
 ## building
 
 step one of course is downloading the source code
