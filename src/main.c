@@ -1,7 +1,7 @@
 /*****************************************************************************
 **
 ** main.c 
-** created 27 12 22
+** created dec 27 2022
 ** by catroidvania
 **
 ******************************************************************************
@@ -27,6 +27,9 @@
 ** overall program is not as optimised as it could be but i am a c newb rn lol
 */
 int main() {
+	/*
+	** declare variables for storing game and menu info
+	*/
 	Game game;
 	Coord move, cpu;
 
@@ -479,7 +482,8 @@ int slotFull(int slot) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int rc, exists;
+	int rc;
+	int exists = 0;
 
 	char *sql = "SELECT id FROM saves WHERE id = ?;";
 
@@ -491,7 +495,7 @@ int slotFull(int slot) {
 
 	/*
 	** doesnt save to database unless i explicitly start and end a transaction
-	** for some reason but doesnt seem to be the issue on the win32 version
+	** for some reason but doesnt seem to be the issue on the windows version
 	*/
 	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 
@@ -505,7 +509,7 @@ int slotFull(int slot) {
 		}
 	}
 
-	if (exists) {
+	if (exists > 0) {
 		exists = 1;
 	} else {
 		exists = 0;
@@ -519,6 +523,10 @@ int slotFull(int slot) {
 	return exists;
 }
 
+/*
+** checks if SAVES.db exists and creates it if not as well as creating the
+** saves table in the database
+*/
 void initSaveFile() {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
@@ -532,6 +540,10 @@ void initSaveFile() {
 
 	int rc;
 
+	/*
+	** read mode so we dont overwrite an existing file
+	** does not exist if it returns a null pointer
+	*/
 	fp = fopen(DBNAME, "r");
 
 	if (fp) {
@@ -565,6 +577,9 @@ void initSaveFile() {
 	sqlite3_close(db);
 }
 
+/*
+** simple select operation to list all the saves in the database
+*/
 void displaySaves() {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
@@ -586,6 +601,10 @@ void displaySaves() {
 
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	
+	/*
+	** we need to print per step as the column pointer changes even without an
+	** sqlite_row happening
+	*/
 	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
 		if (rc == SQLITE_ROW) {
@@ -611,12 +630,18 @@ void displaySaves() {
 	sqlite3_close(db);
 }
 
+/*
+** reads and discards the input buffer when a newline is given
+*/
 void waitForInput() {
 	char confirm;
 	printf("\nPress enter to continue...\n");
 	ffgets(&confirm, 1, stdin);
 }
 
+/*
+** python esque input function
+*/
 void ffgets(char *buf, int bufsize, FILE *stream) {
 	/*
 	flushed file get string
@@ -630,6 +655,9 @@ void ffgets(char *buf, int bufsize, FILE *stream) {
 	while (1) {
 		c = fgetc(stream);
 		
+		/*
+		** might need to include NULL in this list
+		*/
 		if (c == '\n' || c == EOF) {
 			break;
 		} else if (x < bufsize) {

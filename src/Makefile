@@ -3,6 +3,7 @@
 
 #CC = /opt/local/bin/x86_64-w64-mingw32-gcc
 CC = gcc
+
 OBJS = board.o opponent.o main.o
 FLAGS = -Os -g -std=c99
 

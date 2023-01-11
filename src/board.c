@@ -1,6 +1,10 @@
-/* 
-file for board functions
-catroidvania 27 12 22
+/*****************************************************************************
+**
+** board.c
+** file for board related functions
+** created by catroidvania dec 27 2022
+**
+******************************************************************************
 */
 
 #include <stdio.h>
@@ -10,9 +14,16 @@ catroidvania 27 12 22
 #include "board.h"
 #include "main.h"
 
+/*
+** turns a text coordinate to a coord struct
+*/
 Coord coordToBoardIndex(char coord[4]) {
 	Coord c;
 
+	/*
+	** subtracts values corresponding to each chars ascii values
+	** with a being 97 and 1 being 49 which sets it to valid board indexes
+	*/
 	c.Mx = (int)coord[0] - 97;
 	c.My = (int)coord[1] - 49;
 	c.mx = (int)coord[2] - 97;
@@ -21,7 +32,13 @@ Coord coordToBoardIndex(char coord[4]) {
 	return c;
 }
 
+/*
+** checks if a move is legal
+*/
 int validMove(Coord c, Coord lc, Game g) {
+	/*
+	** makes sure its even able to be used as a board index
+	*/
 	if (c.Mx < 0 || c.Mx > 2 ||
 		c.My < 0 || c.My > 2 ||
 		c.mx < 0 || c.mx > 2 ||
