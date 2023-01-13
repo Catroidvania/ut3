@@ -43,6 +43,8 @@ char majorScored(Major);
 char scorePositions(Major);
 
 void drawBoard(Game);
+void drawExplosion(Coord, Coord, Game, char);
+void defsleep(int);
 void initBoard(Game*);
 void playToBoard(Coord, Game*, char);
 void emptyCoord(Coord*);

@@ -1,18 +1,24 @@
 # makefile for the ultimate tic tac toe program final build
 # catroidvania 27 12 22
 
-#CC = /opt/local/bin/x86_64-w64-mingw32-gcc
-CC = gcc
-
 SRCDIR = src
 DEPDIR = deps
 
 SRCS = board.o opponent.o main.o
 DEPS = sqlite3.o
 
-FLAGS = -Os -g -std=c99
 FINAL = ut3
 SAVES = SAVES.db
+
+# in case this is called from deps without a CC flag
+ifndef CC
+CC = gcc
+endif
+
+# flags if not given - happens if make is not run by ut3/Makefile
+ifndef BFLAGS
+BFLAGS = -Os -g -std=c99
+endif
 
 ifeq ($(OS),Windows_NT)
 CLEAN = del
@@ -20,9 +26,14 @@ else
 CLEAN = rm
 endif
 
+# if WINDOWS then define the WINDOWS macro
+ifdef WINDOWS
+CFLAGS += -DWINDOWS
+endif
+
 all : $(patsubst %,../$(SRCDIR)/%,$(SRCS)) $(patsubst %,../$(DEPDIR)/%,$(DEPS))
 	@echo "Building..."
-	@$(CC) $(FLAGS) -o $(FINAL) $^
+	@$(CC) $(BFLAGS) -o $(FINAL) $^
 	@echo "Build complete!"
 
 clean :

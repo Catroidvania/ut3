@@ -7,12 +7,13 @@
 ******************************************************************************
 */
 
-#include <stdio.h>
+#include <stdio.h>		/* for io operations								*/
+#include <time.h>		/* for finding operation speed						*/
 
 /*
 ** i dont need all the features in sqlite3 so i may make my own build of it
 */
-#include "sqlite3.h"
+#include "sqlite3.h"	/* for database operations							*/
 
 #include "main.h"
 #include "board.h"
@@ -45,22 +46,30 @@ int main() {
 	*/
 	initSaveFile();
 	initCpu();
-
+	
 	/*
 	** main game loop
 	*/
 	while (run) {
 		/*
-		** ansi escape codes that clears the screen and moves the cursor to
-		** the top left corner as well as printing a newline as windows
-		** systems below windows ten do not have built in escape code support
+		** if the WINDOWS macro is given at compile time the escape chars
+		** are replaced with some newlines to move the screen along
 		*/
+		#ifdef WINDOWS
+		printf("\n\n\n\n");
+		#else
 		printf("%c[2J%c[;H\n", (char)27, (char)27);
+		#endif
 
 		/*
 		** state one is the main menu and there is no state zero
 		*/
 		if (state == 1) {
+			/*
+			** welcome text that i forgot about lol
+			*/
+			printf("\nWelcome to Ultimate Tic Tac Toe! (Toefish)\n");
+
 			/*
 			** replacing printf()s without bindings with puts() might improve
 			** optimisation although the compiler might already handle that
@@ -72,6 +81,7 @@ int main() {
 			printf("(p)lay a game\n");
 			printf("(l)oad a save\n");
 			printf("(d)isplay saves\n");
+			//printf("(h)ow to play\n"); TODO
 			printf("(q)uit the program\n");
 			printf("Bracketed letter of option: ");
 			/*
@@ -131,7 +141,7 @@ int main() {
 			** but knowing the age of the machine it could be a hardware issue
 			*/
 			} else if (menu == 'l') {
-				printf("\nLoad which slot?: ");
+				printf("\nLoad which slot? (Slot number): ");
 				ffgets(&cslot, 1, stdin);
 				slot = (int)cslot - 48;
 
@@ -346,7 +356,7 @@ int main() {
 			}
 			printf("(s)ave game\n");
 			printf("(q)uit game\n");
-			printf("Bracketed letter");
+			printf("Bracketed letter of option");
 			if (state == 2) {
 				printf(" or input a valid move (eg. a3c2)");
 			}
@@ -358,9 +368,9 @@ int main() {
 			** coordinates is too hard for the user
 			*/
 			if (input[0] == 'p' && state == 2) {
-				printf("Major coordinate?: ");
+				printf("Major coordinate? (eg. b2): ");
 				ffgets(&input[0], 2, stdin);
-				printf("Minor coordinate?: ");
+				printf("Minor coordinate? (eg. c1): ");
 				ffgets(&input[2], 2, stdin);
 
 				move = coordToBoardIndex(input);
@@ -375,7 +385,7 @@ int main() {
 			** menu for saving the game
 			*/
 			} else if (input[0] == 's') {
-				printf("\nSlot to save to: ");
+				printf("\nSlot to save to (Slot number): ");
 				ffgets(&cslot, 1, stdin);
 				slot = (int)cslot - 48;
 
@@ -464,7 +474,7 @@ int main() {
 int waitForConfirm() {
 	char confirm;
 
-	printf("\n(y/n): ");
+	printf("\nConfirm (y)es or (n)o (y or n): ");
 	ffgets(&confirm, 1, stdin);
 
 	if (confirm == 'y') {
@@ -609,7 +619,9 @@ void displaySaves() {
 		rc = sqlite3_step(stmt);
 		if (rc == SQLITE_ROW) {
 			record = (char*)sqlite3_column_blob(stmt, 1);
-			printf("SLOT: %d | MOVES: ", sqlite3_column_int(stmt, 0));
+			printf("SLOT: %d | STRAT: %c | MOVES: ",
+					sqlite3_column_int(stmt, 0), record[0]);
+
 			for (i = 1; i <= (81 * 4) + 1; i++) {
 				if (record[i] != BOARDEMPTY) {
 					printf("%c", record[i]);

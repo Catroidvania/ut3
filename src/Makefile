@@ -1,16 +1,28 @@
 # makefile for the ultimate tic tac toe program source files
 # catroidvania 27 12 22
 
-#CC = /opt/local/bin/x86_64-w64-mingw32-gcc
-CC = gcc
-
 OBJS = board.o opponent.o main.o
-FLAGS = -Os -g -std=c99
 
+# in case this is called from src without a CC flag
+ifndef CC
+CC = gcc
+endif
+
+# file delete command for the correct version
 ifeq ($(OS),Windows_NT)
 CLEAN = del
 else
 CLEAN = rm
+endif
+
+# flags if not given - happens if make is not run by ut3/Makefile
+ifndef SFLAGS
+SFLAGS = -Os -g -std=c99
+endif
+
+# if WINDOWS then define the WINDOWS macro
+ifdef WINDOWS
+CFLAGS += -DWINDOWS
 endif
 
 all : $(OBJS)
@@ -18,7 +30,7 @@ all : $(OBJS)
 	@echo "Sources compiled!"
 
 %.o : %.c
-	@$(CC) $(FLAGS) -I../deps -c $<
+	@$(CC) $(SFLAGS) -I../deps -c $<
 
 clean :
 	@echo "Removing source object files..."

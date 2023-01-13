@@ -3,8 +3,8 @@ file for computer opponent functions
 catroidvania 27 12 22
 */
 
-#include <time.h>
-#include <stdlib.h>
+#include <stdlib.h>		/* for random number generation						*/
+#include <time.h>		/* for seeding the rand function					*/
 
 #include "main.h"
 #include "opponent.h"

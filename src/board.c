@@ -7,9 +7,15 @@
 ******************************************************************************
 */
 
-#include <stdio.h>
+#include <stdio.h>		/* for io operations								*/
 
-#include "sqlite3.h"
+#ifdef WINDOWS			/* if windows macro is set at compile time			*/
+#include <windows.h>	/* for animating explosions on windows				*/
+#else
+#include <time.h>		/* for animating explosions	on unix					*/
+#endif
+
+#include "sqlite3.h"	/* for database operations							*/
 
 #include "board.h"
 #include "main.h"
@@ -46,19 +52,38 @@ int validMove(Coord c, Coord lc, Game g) {
 		return 0;
 	}
 
+	/*
+	** check each valid move case
+	** starting with whether the board square is empty to be played in
+	*/
 	if (g.board[c.Mx][c.My].Minor[c.mx][c.my] == BOARDEMPTY) {
+		/*
+		** check that the major played in is the one that was sent to
+		*/
 		if (c.Mx == lc.mx && c.My == lc.my) {
 			return 1;
+		/*
+		** valid to go any major if sent to a filled major
+		*/
 		} else if (majorFilled(g.board[lc.mx][lc.my])) {
 			return 1;
+		/*
+		** also valid to go anywhere if last move scored
+		*/
 		} else if (lc.Mx < 0 || lc.My < 0 || lc.mx < 0 || lc.my < 0) {
 			return 1;
 		}
 	}
 
+	/*
+	** move is not legal otherwise
+	*/
 	return 0;
 }
 
+/*
+** if any majors are scored then fill them with the scorees tile
+*/
 int fillScored(Game *g) {
 	int majorx, majory; 
 	int scored = 0;
@@ -202,7 +227,95 @@ void drawBoard(Game g) {
 	}
 
 	printf("| @  a b c  a b c  a b c  |\n");
-	printf("|______A______B______C____|\n");
+	printf("|______a______b______c____|\n");
+}
+
+void drawExplosion(Coord c, Coord lc,  Game g, char turn) {
+	int Mx, My, mx, my, x, y;
+	int frame;
+	char buf[16][28];
+	/*
+	** char arrays containing the decoration to make
+	** it easier to copy
+	*/
+	char *topdecor[] = {
+		" _________________________ \n",
+		"|                         |\n"};
+	char *spacer = 
+		"|                         |\n";
+	char *bottomdecor[] = {
+		"| @  a b c  a b c  a b c  |\n",
+		"|______a______b______c____|\n"};
+
+	for (frame = 0; frame < 15; frame++) {
+		for (My = 0; My < 16; My++) {
+		for (Mx = 0; Mx < 28; Mx++) {
+			if (My < 2) {
+				buf[My][Mx] = topdecor[My][Mx];
+			} else if (My > 25) {
+				buf[My][Mx] = bottomdecor[My - 26][Mx];
+			} else {
+				mx = ((Mx - 5) / 2) / 4, my = (My - 2) / 4;
+				x  = ((Mx - 5) / 2) % 4, y  = (My - 2) % 4;
+
+				if (Mx > 4) {
+					if (y == 0) {
+						buf[My][Mx] = spacer[Mx];
+					} else {
+						if (Mx % 2) {
+							buf[My][Mx] = ' ';
+						} else {
+							buf[My][Mx] = g.board[mx][my].Minor[x][y];
+						}
+					}
+				} else if (Mx > 25) {
+					buf[My][Mx] = Mx == 26 ? '|' : '\n';
+				} else if (Mx == 0) {
+					buf[My][0] = y == 1 ? (char)(my + 50) : '|';
+					buf[My][1] = ' ';
+					buf[My][2] = (char)(y + 50);
+					buf[My][3] = ' ';
+					buf[My][4] = ' ';	
+				}
+			}
+		}}
+
+		/* TODO animations here */
+		if (frame < 5) {
+
+		} else if (frame < 10) {
+
+		} else {
+
+		}
+
+		defsleep(200);
+	}
+}
+
+/*
+** my own sleep function because sleep is non standard lol
+*/
+void defsleep(int msec) {
+	/*
+	** enclosed in a preprocesser block as the command 
+	** is system depandant hurrah for that
+	*/
+#ifdef WINDOWS
+	Sleep(msec);
+#else
+	/*
+	** so large milisecond arguments dont overflow
+	*/
+	time_t sec = 0;
+
+	if (msec > 1000) {
+		sec = msec / 1000;
+		msec %= 1000;
+	}
+
+	nanosleep((const struct timespec[]){{sec, (long)msec * 1000000L}}, NULL);
+#endif
 }
 
 void initBoard(Game *g) {

@@ -1,11 +1,17 @@
 # makefile for the ultimate tic tac toe program dependancies
 # catroidvania 27 12 22
 
-#CC = /opt/local/bin/x86_64-w64-mingw32-gcc
-CC = gcc
-
 OBJS = sqlite3.o
-FLAGS = -Os -g -std=c99
+
+# in case this is called from deps without a CC flag
+ifndef CC
+CC = gcc
+endif
+
+# flags if not given - happens if make is not run by ut3/Makefile
+ifndef DFLAGS
+DFLAGS = -Os -g -std=c99
+endif
 
 ifeq ($(OS),Windows_NT)
 CLEAN = del
@@ -13,12 +19,17 @@ else
 CLEAN = rm
 endif
 
+# if WINDOWS then define the WINDOWS macro
+ifdef WINDOWS
+CFLAGS += -DWINDOWS
+endif
+
 all : $(OBJS)
 	@echo "Compiling dependancies..."
 	@echo "Dependancies compiled!"
 
 %.o : %.c
-	@$(CC) $(FLAGS) -c $<
+	@$(CC) $(DFLAGS) -c $<
 
 clean :
 	@echo "Removing dependancies object files..."

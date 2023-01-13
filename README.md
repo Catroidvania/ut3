@@ -18,10 +18,25 @@ or you can just use the jank binaries i release sometimes
 
 though you will have to deal with windows defender and such
 
+### build options
 
-in the future i will probably try cmake or any other kind of more portable
+you can set the following `make` variables to change certain things without
 
-build / compile system
+having to edit the Makefiles themselves:
+
+| variable | description | default value |
+|----------|-------------|--------------|
+| CC       | compiler to use | gcc |
+| MAKE     | make command to use | make |
+| WINDOWS  | compile for windows (is true if any value is assigned) | (empty for false value) |
+| GFLAGS   | default compiler flags for all Makefiles | -Os -g -std=c99 |
+| SFLAGS   | flags for compiling files in src | -Os -g -std=c99 |
+| DFLAGS   | flags for compiling files in deps | -Os -g -std=c99 |
+| BFLAGS   | flags for linking objects in build | -Os -g -std=c99 |
+
+none of these are required to be provided except for any value to `WINDOWS`
+
+when compiling for windows
 
 ### windows 32 bit
 
@@ -34,10 +49,10 @@ make sure that is installs mingw32-make and gcc
 then change into the `ut3-master` directory and run:
 
 ```
-mingw32-make
+mingw32-make WINDOWS=TRUE
 ```
 
-if all goes well you can run the program created in the `build` directory:
+if it compiles you can run the program created in the `build` directory:
 
 ```
 cd build
@@ -53,6 +68,16 @@ the w64devkit is found here:
 - <https://www.mingw-w64.org/downloads/#w64devkit>
 
 just run the same commands as for linux / macos through the devkit program
+
+but you will need to include the make variable `WINDOWS=TRUE` which would
+
+look something like:
+
+```
+make WINDOWS=TRUE
+```
+
+otherwise itll
 
 ### linux / macos
 
