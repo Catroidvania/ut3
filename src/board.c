@@ -8,6 +8,8 @@
 */
 
 #include <stdio.h>		/* for io operations								*/
+#include <stdlib.h>		/* for random number generation						*/
+#include <math.h>		/* for square root and absolute value*/
 
 #ifdef WINDOWS			/* if windows macro is set at compile time			*/
 #include <windows.h>	/* for animating explosions on windows				*/
@@ -70,7 +72,7 @@ int validMove(Coord c, Coord lc, Game g) {
 		/*
 		** also valid to go anywhere if last move scored
 		*/
-		} else if (lc.Mx < 0 || lc.My < 0 || lc.mx < 0 || lc.my < 0) {
+		} else if (lc.mx < 0 || lc.my < 0) {
 			return 1;
 		}
 	}
@@ -208,7 +210,7 @@ void drawBoard(Game g) {
 	printf(" _________________________ \n");
 	printf("|                         |\n");
 
-	for (majory = 2; majory >= 0; majory--) { // needs to be draw y first lmao
+	for (majory = 2; majory >= 0; majory--) {
 	for (minory = 2; minory >= 0; minory--) {
 		if (minory == 1) {
 			printf("%d %d  ", majory + 1, minory + 1);
@@ -230,67 +232,196 @@ void drawBoard(Game g) {
 	printf("|______a______b______c____|\n");
 }
 
-void drawExplosion(Coord c, Coord lc,  Game g, char turn) {
-	int Mx, My, mx, my, x, y;
-	int frame;
-	char buf[16][28];
+/*
+** neat lil animation to make seeing where the computer went easier
+*/
+void drawExplosion(Coord c, Coord lc, Game g, char turn) {
+	int Mx, My, mx, my, Lx, Ly, lx, ly;
+	float x, y, maxframe;
+	float frame = 0;
+	/*
+	** text buffers
+	*/
+	char clrbuf[16][27], buf[16][27];
 	/*
 	** char arrays containing the decoration to make
 	** it easier to copy
 	*/
-	char *topdecor[] = {
-		" _________________________ \n",
-		"|                         |\n"};
-	char *spacer = 
-		"|                         |\n";
-	char *bottomdecor[] = {
-		"| @  a b c  a b c  a b c  |\n",
-		"|______a______b______c____|\n"};
+	char *topdecor = 		" _________________________ ";
+	char *spacer =			"|                         |";
+	char *bottomdecor1 = 	"| @  a b c  a b c  a b c  |";
+	char *bottomdecor2 = 	"|______a______b______c____|";
 
-	for (frame = 0; frame < 15; frame++) {
-		for (My = 0; My < 16; My++) {
-		for (Mx = 0; Mx < 28; Mx++) {
-			if (My < 2) {
-				buf[My][Mx] = topdecor[My][Mx];
-			} else if (My > 25) {
-				buf[My][Mx] = bottomdecor[My - 26][Mx];
-			} else {
-				mx = ((Mx - 5) / 2) / 4, my = (My - 2) / 4;
-				x  = ((Mx - 5) / 2) % 4, y  = (My - 2) % 4;
+	/*
+	** create a 2d copy of the board display
+	** to make clearing the buffer faster
+	*/
 
-				if (Mx > 4) {
-					if (y == 0) {
-						buf[My][Mx] = spacer[Mx];
-					} else {
-						if (Mx % 2) {
-							buf[My][Mx] = ' ';
-						} else {
-							buf[My][Mx] = g.board[mx][my].Minor[x][y];
-						}
-					}
-				} else if (Mx > 25) {
-					buf[My][Mx] = Mx == 26 ? '|' : '\n';
-				} else if (Mx == 0) {
-					buf[My][0] = y == 1 ? (char)(my + 50) : '|';
-					buf[My][1] = ' ';
-					buf[My][2] = (char)(y + 50);
-					buf[My][3] = ' ';
-					buf[My][4] = ' ';	
-				}
+	/*
+	** decor bits
+	*/
+	for (Mx = 0; Mx < 27; Mx++) {
+		clrbuf[0][Mx] = topdecor[Mx];
+		clrbuf[14][Mx] = bottomdecor1[Mx];
+		clrbuf[15][Mx] = bottomdecor2[Mx];
+	}
+
+	/*
+	** empty body
+	*/
+	for (My = 1; My < 14; My++) {
+	for (Mx = 0; Mx < 27; Mx++) {
+		clrbuf[My][Mx] = spacer[Mx];
+	}}
+
+	/*
+	** line numbers
+	*/
+	x = 3, y = 3;
+	for (My = 2; My < 13; My++) {
+		if (My % 4 == 1) {
+			continue;
+		}
+		
+		clrbuf[My][0] = y == 2 ? (char)(x + 48) : '|';
+		clrbuf[My][2] = (char)(y + 48);
+		y--;
+
+		if (y < 1) {
+			x--;
+			y = 3;
+		}
+	}
+
+	/*
+	** board contents and converting coordinates
+	*/
+	x = 5, y = 2;
+	for (My = 2; My >= 0; My--) {
+	for (my = 2; my >= 0; my--) {
+		x = 5;
+		for (Mx = 0; Mx < 3; Mx++) {
+		for (mx = 0; mx < 3; mx++) {
+			clrbuf[(int)y][(int)x] =
+			g.board[Mx][My].Minor[mx][my];
+			if (lc.Mx == Mx && lc.My == My &&
+				lc.mx == mx && lc.my == my) {
+				lx = x;
+				ly = y;
+			} else if (c.Mx == Mx && c.My == My &&
+					   c.mx == mx && c.my == my) {
+				Lx = x;
+				Ly = y;
 			}
-		}}
+			x += 2;
+		}
+			x++;
+		}
+		y++;
+	}
+		y++;
+	}
 
-		/* TODO animations here */
-		if (frame < 5) {
+	/*
+	** find out how roughly long the animation should be
+	*/
+	x = Lx - lx;
+	y = Ly - ly;
 
-		} else if (frame < 10) {
+	maxframe = (int)sqrt(fabsf(x * x) + fabsf(y * y));
 
+	/*
+	** create the buffer
+	*/
+	for (My = 0; My < 16; My++) {
+	for (Mx = 0; Mx < 27; Mx++) {
+		buf[My][Mx] = clrbuf[My][Mx];
+	}}
+
+	/*
+	** animation loop
+	*/
+	while (frame < maxframe + 5) {
+		/*
+		** parts of the animation
+		*/
+		if (frame <= maxframe) {
+			/*
+			** part one - smoke trail
+			*/
+			buf[ly + (int)(y*(frame/maxframe))]
+			   [lx + (int)(x*(frame/maxframe))] = 
+			rand() % 5 < 3 ? '#' : '%';
 		} else {
+			/*
+			** part three - burst
+			*/
 
+			/*
+			** inner circle
+			*/
+			for (Mx = -1; Mx < 2; Mx++) {
+			for (My = -1; My < 2; My++) {
+				if ((Lx + Mx < 1 || Lx + Mx > 25 ||
+					 Ly + My < 1 || Ly + My > 15)) {
+					continue;
+				}
+
+				buf[Ly + My][Lx + Mx] = rand() % 5 < 3 ? '#' : '%';
+			}}
+
+			/*
+			** outer spokes
+			*/
+			for (Mx = -2; Mx < 3; Mx += 2) {
+			for (My = -2; My < 3; My += 2) {
+				if ((Lx + Mx < 1 || Lx + Mx > 25 ||
+					 Ly + My < 1 || Ly + My > 15)) {
+					continue;
+				}
+
+				buf[Ly + My][Lx + Mx] = rand() % 5 < 3 ? '#' : '%';
+			}}
+
+			/*
+			** middle
+			*/
+			buf[Ly][Lx] = turn;
 		}
 
-		defsleep(200);
+		/*
+		** draw buffer
+		*/
+#		ifdef WINDOWS
+		printf("\n\n\n\n");
+#		else
+		printf("%c[2J%c[;H\n", (char)27, (char)27);
+#		endif
+
+		printf("Computer is playing...\n");
+
+		for (My = 0; My < 16; My++) {
+		for (Mx = 0; Mx < 27; Mx++) {
+			printf("%c", buf[My][Mx]);
+		}
+			printf("\n");
+		}
+
+		/*
+		** pause a bit so animation can be seen
+		*/
+		defsleep(100);
+		frame++;
 	}
+
+//	printf("lc: %d %d %d %d c: %d %d %d %d\n", lc.Mx, lc.My, lc.mx, lc.my, c.Mx, c.My, c.mx, c.my);
+//	printf("l: %d %d L: %d %d n: %d %d\n", lx, ly, Lx, Ly, x, y);
+
+#	ifdef WINDOWS
+	printf("\n\n\n\n");
+#	else
+	printf("%c[2J%c[;H\n", (char)27, (char)27);
+#	endif
 }
 
 /*
@@ -301,9 +432,9 @@ void defsleep(int msec) {
 	** enclosed in a preprocesser block as the command 
 	** is system depandant hurrah for that
 	*/
-#ifdef WINDOWS
+#	ifdef WINDOWS
 	Sleep(msec);
-#else
+#	else
 	/*
 	** so large milisecond arguments dont overflow
 	*/
@@ -315,7 +446,7 @@ void defsleep(int msec) {
 	}
 
 	nanosleep((const struct timespec[]){{sec, (long)msec * 1000000L}}, NULL);
-#endif
+#	endif
 }
 
 void initBoard(Game *g) {
@@ -350,11 +481,11 @@ void fillMajor(Major *m, char c) {
 	}}
 }
 
-void emptyCoord(Coord *c) {
-	c->Mx = -1;
-	c->My = -1;
-	c->mx = -1;
-	c->my = -1;
+void emptyCoord(Coord *c, int replace) {
+	c->Mx = replace;
+	c->My = replace;
+	c->mx = replace;
+	c->my = replace;
 }
 
 void recordMove(Coord c, Game *g, char strat) {
@@ -401,7 +532,7 @@ void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 		}
 
 		if (fillScored(g)) {
-			emptyCoord(m1);
+			emptyCoord(m1, -1);
 		}
 
 		c = p1;

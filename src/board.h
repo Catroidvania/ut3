@@ -47,7 +47,7 @@ void drawExplosion(Coord, Coord, Game, char);
 void defsleep(int);
 void initBoard(Game*);
 void playToBoard(Coord, Game*, char);
-void emptyCoord(Coord*);
+void emptyCoord(Coord*, int);
 void fillMajor(Major*, char);
 void recordMove(Coord, Game*, char);
 void playRecordToBoard(Game*, Coord*, Coord*, char, char);

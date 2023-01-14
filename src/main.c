@@ -119,8 +119,8 @@ int main() {
 	
 				initBoard(&game);
 				
-				emptyCoord(&move);
-				emptyCoord(&cpu);
+				emptyCoord(&move, 1);
+				emptyCoord(&cpu, -1);
 
 				/*
 				** the turn counter is tracked as a char for convenience
@@ -157,8 +157,8 @@ int main() {
 				*/
 				initBoard(&game);
 				
-				emptyCoord(&move);
-				emptyCoord(&cpu);
+				emptyCoord(&move, -1);
+				emptyCoord(&cpu, -1);
 
 				loadSave(slot, &game);
 
@@ -231,8 +231,8 @@ int main() {
 				** game is over although im not really sure this is even needed
 				** anymore since all relavant playToBoard()s cehck for state
 				*/
-				emptyCoord(&move);
-				emptyCoord(&cpu);
+				emptyCoord(&move, -1);
+				emptyCoord(&cpu, -1);
 			} else if (state == 2 && gameTied(game)) {
 				state = 3;
 				/*
@@ -241,8 +241,8 @@ int main() {
 				*/
 				winner = 't';
 
-				emptyCoord(&move);
-				emptyCoord(&cpu);
+				emptyCoord(&move, -1);
+				emptyCoord(&cpu, -1);
 			}
 
 			/*
@@ -315,6 +315,19 @@ int main() {
 					continue;
 				}
 
+				/*
+				** in case last move scored it will be the centre of the
+				** scored major or if the computer goes first
+				*/
+				if (move.mx < 0 || move.my < 0) {
+					move.mx = game.moverecord[((turn - 1) * 4) + 1];
+					move.my = game.moverecord[((turn - 1) * 4) + 2];
+					move.Mx = game.moverecord[((turn - 1) * 4) + 3];
+					move.My = game.moverecord[((turn - 1) * 4) + 4];
+				}
+
+				drawExplosion(cpu, move, game, P2CHAR);
+
 				playToBoard(cpu, &game, P2CHAR);
 				recordMove(cpu, &game, strat);
 
@@ -323,6 +336,8 @@ int main() {
 				** order even though i find myself looking at the last move
 				** most of the time instead of the below the board
 				*/
+				printf("Computer has played!\n");
+
 				drawBoard(game);
 
 				printf("\nThe computer played: ");
@@ -332,7 +347,7 @@ int main() {
 				waitForInput();
 
 				if (fillScored(&game)) {
-					emptyCoord(&cpu);
+					emptyCoord(&cpu, -1);
 				}
 
 				game.turn++;
@@ -451,7 +466,7 @@ int main() {
 			game.turn++;
 	
 			if (fillScored(&game)) {
-				emptyCoord(&move);
+				emptyCoord(&move, -1);
 			}
 
 			turn = P2CHAR;
@@ -474,7 +489,7 @@ int main() {
 int waitForConfirm() {
 	char confirm;
 
-	printf("\nConfirm (y)es or (n)o (y or n): ");
+	printf("\nConfirm yes or no (y or n): ");
 	ffgets(&confirm, 1, stdin);
 
 	if (confirm == 'y') {
