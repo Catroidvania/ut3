@@ -34,11 +34,13 @@ int main() {
 	Game game;
 	Coord move, cpu;
 
+	struct timespec pt, ft, dt;
+
 	char menu, strat, turn, winner, cslot;
 	char input[4];
 	
 	int run = 1, state = 1, saved = 0;
-	int i, slot;
+	int slot, depth;
 	/*
 	** both are called here so they only run once since there is no need for
 	** to verify the existance of the save database multiple times and there
@@ -55,11 +57,11 @@ int main() {
 		** if the WINDOWS macro is given at compile time the escape chars
 		** are replaced with some newlines to move the screen along
 		*/
-		#ifdef WINDOWS
+#		ifdef WINDOWS
 		printf("\n\n\n\n");
-		#else
+#		else
 		printf("%c[2J%c[;H\n", (char)27, (char)27);
-		#endif
+#		endif
 
 		/*
 		** state one is the main menu and there is no state zero
@@ -103,15 +105,18 @@ int main() {
 				printf("(r)andom - plays random moves\n");
 				printf("(s)tall  - always sends to the least played major\n");
 				printf("(l)ogan  - uses send priority!\n");
+				/*
+				** very buggy
+				** mostly memory leaks due to segfaults stopping the tree from
+				** being freed properly - have yet to figure out why this
+				** keeps happenning - maybe some kind of integer overflow since
+				** gdb keeps showing `selected' as being eight billion or so
+				*/
+				/*printf("(m)onte carlo (may cause performance issues!)\n");*/
 				printf("Bracketed letter of options: ");
 				ffgets(&strat, 1, stdin);
 
-				/*
-				** there was originally going to be a brute force strategy but
-				** it would have been very hard to balance as it would play
-				** perfectly as well as not being human followable
-				*/
-				if (strat != 'r' && strat != 's' && strat != 'l') {
+				if (strat != 'r' && strat != 's' && strat != 'l' && strat != 'm') {
 					printf("Invalid strategy! Defaulting to random...\n");
 					strat = 'r';
 					waitForInput();
@@ -121,6 +126,15 @@ int main() {
 				
 				emptyCoord(&move, 1);
 				emptyCoord(&cpu, -1);
+
+				/*
+				** additional settings for brute force
+				*/
+				if (strat == 'm') {
+					printf("\nMaximum number of searches allowed?: ");
+					geti(&depth, stdin);
+					printf("%d\n", depth);
+				}
 
 				/*
 				** the turn counter is tracked as a char for convenience
@@ -166,11 +180,21 @@ int main() {
 
 				strat = game.moverecord[0];
 
-				if (strat != 'r' && strat != 's' && strat != 'l') {
+				if (strat != 'r' && strat != 's' && strat != 'l' && strat != 'm') {
 					printf("Load error! Defaulting to random strategy...\n");
 					strat = 'r';
 					waitForInput();
 				}
+
+				/*
+				** as storing deoth was not accounted for when writing the saves system
+				*/
+				if (strat == 'm') {
+					printf("\nLoading monte carlo startegy!\n");
+					printf("Maximum number of searches allowed?: ");
+					geti(&depth, stdin);
+				}
+
 
 				/*
 				** saved is checked even though no save is made since the game
@@ -308,6 +332,15 @@ int main() {
 					cpu = stallStrat(move, game);
 				} else if (strat == 'l') {
 					cpu = loganStrat(move, game);
+				} else if (strat == 'm') {
+#					ifdef DEBUG
+					clock_gettime(CLOCK_REALTIME, &pt);
+#					endif
+					cpu = smartStrat(move, game, depth);
+#					ifdef DEBUG
+					clock_gettime(CLOCK_REALTIME, &ft);
+#					endif
+
 				} else {
 					printf("\nInvalid Strategy!\n");
 					waitForInput();
@@ -340,6 +373,11 @@ int main() {
 
 				drawBoard(game);
 
+#				ifdef DEBUG
+				dt.tv_sec = ft.tv_sec - pt.tv_sec;
+				dt.tv_nsec = ft.tv_nsec - pt.tv_nsec;
+				printf("\ntook: %fs, %fns\n", (double)dt.tv_sec, (double)dt.tv_nsec);
+#				endif
 				printf("\nThe computer played: ");
 				printf("%c%i%c%i\n", (char)cpu.Mx + 97, cpu.My + 1,
 									 (char)cpu.mx + 97, cpu.my + 1);
@@ -507,8 +545,7 @@ int slotFull(int slot) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int rc;
-	int exists = 0;
+	int rc = 0, exists = 0;
 
 	char *sql = "SELECT id FROM saves WHERE id = ?;";
 
@@ -563,7 +600,7 @@ void initSaveFile() {
 		"id INTEGER NOT NULL PRIMARY KEY,"\
 		"record BLOB NOT NULL);";
 
-	int rc;
+	int rc = 0;
 
 	/*
 	** read mode so we dont overwrite an existing file
@@ -609,7 +646,8 @@ void displaySaves() {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int i, rc;
+	int i;
+	int rc = 0;
 	
 	char *record;
 	char *sql = "SELECT * FROM saves;";
@@ -692,3 +730,20 @@ void ffgets(char *buf, int bufsize, FILE *stream) {
 		}
 	}
 }
+
+/*
+** like ffgets but for integers
+*/
+void geti(int *buf, FILE *stream) {
+	char c;
+
+	scanf("%d", buf);
+	
+	while (1) {
+		c = fgetc(stream);	
+		if (c == '\n' || c == EOF) {
+			break;
+		}
+	}
+}
+

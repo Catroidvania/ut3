@@ -18,26 +18,6 @@ or you can just use the jank binaries i release sometimes
 
 though you will have to deal with windows defender and such
 
-### build options
-
-you can set the following `make` variables to change certain things without
-
-having to edit the Makefiles themselves:
-
-| variable | description | default value |
-|----------|-------------|--------------|
-| CC       | compiler to use | gcc |
-| MAKE     | make command to use | make |
-| WINDOWS  | compile for windows (is true if any value is assigned) | (empty for false value) |
-| GFLAGS   | default compiler flags for all Makefiles | -Os -g -std=c99 |
-| SFLAGS   | flags for compiling files in src | -Os -g -std=c99 |
-| DFLAGS   | flags for compiling files in deps | -Os -g -std=c99 |
-| BFLAGS   | flags for linking objects in build | -Os -g -std=c99 |
-
-none of these are required to be provided except for any value to `WINDOWS`
-
-when compiling for windows
-
 ### windows 32 bit
 
 you will need mingw32 installed which can be found here: 
@@ -118,6 +98,26 @@ this is neither a particularly complicated program nor one that i expect needs
 over detailed documentation but i am availible to clarify certain parts of my
 
 spaghetti code if you need it
+
+### build options
+
+you can set the following `make` variables to change certain things without
+
+having to edit the Makefiles themselves:
+
+| variable | description | default value |
+|----------|-------------|--------------|
+| CC       | compiler to use | gcc |
+| MAKE     | make command to use | make |
+| WINDOWS  | compile for windows (is true if any value is assigned) | (empty for false value) |
+| GFLAGS   | default compiler flags for all Makefiles | -Os -g -std=c99 |
+| SFLAGS   | flags for compiling files in src | -Os -g -std=c99 |
+| DFLAGS   | flags for compiling files in deps | -Os -g -std=c99 |
+| BFLAGS   | flags for linking objects in build | -Os -g -std=c99 |
+
+none of these are required to be provided except for any value to `WINDOWS`
+
+when compiling for windows
 
 ## license
 

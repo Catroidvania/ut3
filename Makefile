@@ -23,7 +23,7 @@ endif
 # compiler flags
 # global flags - also the default flags if none given
 ifndef GFLAGS
-GFLAGS = -Os -g -std=c99
+GFLAGS = -Os -std=c99
 else
 endif
 # source file flags
@@ -45,13 +45,18 @@ ifndef WINDOWS
 WINDOWS =
 endif
 
+# for compiling with debuging features - not always used
+ifndef DEBUG
+DEBUG =
+endif
+
 # specify a differnt compiler
 ifndef CC
 CC = gcc
 endif
 
 # export variables needed in submakefiles
-export GFLAGS SFLAGS DFLAGS BFLAGS WINDOWS CC
+export GFLAGS SFLAGS DFLAGS BFLAGS WINDOWS DEBUG CC
 
 all : objs
 	@echo "Locating build Makefile..."

@@ -17,7 +17,7 @@ endif
 
 # flags if not given - happens if make is not run by ut3/Makefile
 ifndef BFLAGS
-BFLAGS = -Os -g -std=c99
+BFLAGS = -Os -std=c99
 endif
 
 ifeq ($(OS),Windows_NT)
@@ -28,7 +28,12 @@ endif
 
 # if WINDOWS then define the WINDOWS macro
 ifdef WINDOWS
-CFLAGS += -DWINDOWS
+BFLAGS += -D WINDOWS
+endif
+
+# if DEBUG mode the define the DEBUG macro
+ifdef DEBUG
+BFLAGS += -D DEBUG -g -Wall
 endif
 
 all : $(patsubst %,../$(SRCDIR)/%,$(SRCS)) $(patsubst %,../$(DEPDIR)/%,$(DEPS))

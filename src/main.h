@@ -4,6 +4,19 @@
 */
 
 /**
+** macro for player representation characters
+** may change to an extern char at some point for customisation but at the
+** moment is just a macro
+*/
+#ifndef P1CHAR
+#define P1CHAR 'x'
+#endif
+
+#ifndef P2CHAR
+#define P2CHAR 'o'
+#endif
+
+/**
 ** prevents main.h from being declared more than once / recursivly declared
 */
 #ifndef MAIN_H
@@ -16,14 +29,6 @@
 ** this is not expected nor needed to change so it is a constant
 */
 #define DBNAME "SAVES.db"
-
-/**
-** macro for player representation characters
-** may change to an extern char at some point for customisation but at the
-** moment is just a macro
-*/
-#define P1CHAR 'x'
-#define P2CHAR 'o'
 
 /**
 ** pauses the program execution and gets a yes / no from the user
@@ -74,5 +79,11 @@ void displaySaves(void);
 */
 void ffgets(char*, int, FILE*);
 
+/**
+**read an integer from the file and discards the rest of the line
+** int *buf 	is a pointer to an integer that the read value gets stored in
+** FILE *stream	is the fileno to read from although intended to be stdin
+*/
+void geti(int *buf, FILE *stream); 
 #endif
 

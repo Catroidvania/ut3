@@ -17,12 +17,17 @@ endif
 
 # flags if not given - happens if make is not run by ut3/Makefile
 ifndef SFLAGS
-SFLAGS = -Os -g -std=c99
+SFLAGS = -Os -std=c99
 endif
 
 # if WINDOWS then define the WINDOWS macro
 ifdef WINDOWS
-CFLAGS += -DWINDOWS
+SFLAGS += -D WINDOWS
+endif
+
+# if DEBUG mode the define the DEBUG macro
+ifdef DEBUG
+SFLAGS += -D DEBUG -g -Wall
 endif
 
 all : $(OBJS)
