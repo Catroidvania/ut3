@@ -685,7 +685,7 @@ void displaySaves() {
 					printf("%c", record[i]);
 				}
 
-				if (i != 2 && i % 4 == 2) {
+				if (i % 4 == 0) {
 					printf(" ");
 				}
 			}
