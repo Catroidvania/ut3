@@ -1,8 +1,8 @@
 /*****************************************************************************
 **
 ** main.c 
-** created dec 27 2022
-** by catroidvania
+** contains main program logic
+** created by catroidvania dec 27 2022
 **
 ******************************************************************************
 */
@@ -57,11 +57,7 @@ int main() {
 		** if the WINDOWS macro is given at compile time the escape chars
 		** are replaced with some newlines to move the screen along
 		*/
-#		ifdef WINDOWS
-		printf("\n\n\n\n");
-#		else
-		printf("%c[2J%c[;H\n", (char)27, (char)27);
-#		endif
+		printf(CLEARSCREEN);
 
 		/*
 		** state one is the main menu and there is no state zero
@@ -105,6 +101,8 @@ int main() {
 				printf("(r)andom - plays random moves\n");
 				printf("(s)tall  - always sends to the least played major\n");
 				printf("(l)ogan  - uses send priority!\n");
+
+#			ifdef DEBUG
 				/*
 				** very buggy
 				** mostly memory leaks due to segfaults stopping the tree from
@@ -112,7 +110,8 @@ int main() {
 				** keeps happenning - maybe some kind of integer overflow since
 				** gdb keeps showing `selected' as being eight billion or so
 				*/
-				/*printf("(m)onte carlo (may cause performance issues!)\n");*/
+				printf("(m)onte carlo (may cause performance issues!)\n");
+#			endif
 				printf("Bracketed letter of options: ");
 				ffgets(&strat, 1, stdin);
 
@@ -127,6 +126,7 @@ int main() {
 				emptyCoord(&move, 1);
 				emptyCoord(&cpu, -1);
 
+#			ifdef DEBUG
 				/*
 				** additional settings for brute force
 				*/
@@ -135,6 +135,7 @@ int main() {
 					geti(&depth, stdin);
 					printf("%d\n", depth);
 				}
+#			endif
 
 				/*
 				** the turn counter is tracked as a char for convenience
@@ -186,15 +187,16 @@ int main() {
 					waitForInput();
 				}
 
+#			ifdef DEBUG
 				/*
-				** as storing deoth was not accounted for when writing the saves system
+				** as storing depth was not accounted for when writing the saves system
 				*/
 				if (strat == 'm') {
 					printf("\nLoading monte carlo startegy!\n");
 					printf("Maximum number of searches allowed?: ");
 					geti(&depth, stdin);
 				}
-
+#			endif
 
 				/*
 				** saved is checked even though no save is made since the game
@@ -333,13 +335,16 @@ int main() {
 				} else if (strat == 'l') {
 					cpu = loganStrat(move, game);
 				} else if (strat == 'm') {
-#					ifdef DEBUG
+					/*
+					** trying to use the mcts strategy just uses random
+					*/
+#				ifdef DEBUG
 					clock_gettime(CLOCK_REALTIME, &pt);
-#					endif
 					cpu = smartStrat(move, game, depth);
-#					ifdef DEBUG
 					clock_gettime(CLOCK_REALTIME, &ft);
-#					endif
+#				else
+					cpu = randomStrat(move, game);
+#				endif
 
 				} else {
 					printf("\nInvalid Strategy!\n");
@@ -680,7 +685,7 @@ void displaySaves() {
 					printf("%c", record[i]);
 				}
 
-				if (i != 1 && i % 4 == 1) {
+				if (i != 2 && i % 4 == 2) {
 					printf(" ");
 				}
 			}

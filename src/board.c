@@ -105,6 +105,9 @@ int fillScored(Game *g) {
 	return scored;
 }
 
+/*
+** check if a the board is filled and no legal moves can be played
+*/
 int gameTied(Game g) {
 	int Mx, My, mx, my;
 
@@ -120,6 +123,9 @@ int gameTied(Game g) {
 	return 1;
 }
 
+/*
+** checks if a major is filled and cannot be played in
+*/
 int majorFilled(Major m) {
 	int mx, my;
 	
@@ -133,13 +139,10 @@ int majorFilled(Major m) {
 	return 1;
 }
 
+/*
+** checks specifically if a major has been filled from scoring
+*/
 char majorScored(Major m) {
-	/*
-	this is only needed for gameWon()
-	majorFilled() does this but less verbose
-	nvm its used in fillScored() so scoring
-	on the last empty square still works
-	*/
 	int minorx, minory;
 	char c = m.Minor[0][0];
 		
@@ -153,6 +156,9 @@ char majorScored(Major m) {
 	return c;
 }
 
+/*
+** checks if a player has won the game
+*/
 char gameWon(Game g) {
 	Major m;
 	int x, y;
@@ -166,13 +172,14 @@ char gameWon(Game g) {
 	
 }
 
+/*
+** checks if a major has been scored in
+*/
 char scorePositions(Major m) {
 	int i;
 
-	/*
-	must be a better way to loop over all this
-	
-	horizontals
+	/*	
+	** horizontals
 	*/
 	for (i = 0; i < 3; i++) {
 		if (m.Minor[i][0] == m.Minor[i][1] && m.Minor[i][0] == m.Minor[i][2]) {
@@ -181,8 +188,9 @@ char scorePositions(Major m) {
 			}
 		}
 	}
+
 	/*
-	verticals
+	** verticals
 	*/
 	for (i = 0; i < 3; i++) {
 		if (m.Minor[0][i] == m.Minor[1][i] && m.Minor[0][i] == m.Minor[2][i]) {
@@ -191,8 +199,9 @@ char scorePositions(Major m) {
 			}
 		}
 	}
+
 	/*
-	diagonals
+	**diagonals
 	*/
 	if ((m.Minor[1][1] == m.Minor[0][0] && m.Minor[1][1] == m.Minor[2][2]) ||
 		(m.Minor[1][1] == m.Minor[2][0] && m.Minor[1][1] == m.Minor[0][2])) {
@@ -204,14 +213,26 @@ char scorePositions(Major m) {
 	return BOARDEMPTY;
 }
 
+/*
+** draws the board with in an asthetically pleasing way
+*/
 void drawBoard(Game g) {
 	int majorx, majory, minorx, minory;
 
+	/*
+	** top borders
+	*/
 	printf(" _________________________ \n");
 	printf("|                         |\n");
 
+	/*
+	** board contents
+	*/
 	for (majory = 2; majory >= 0; majory--) {
 	for (minory = 2; minory >= 0; minory--) {
+		/*
+		** y coordinates
+		*/
 		if (minory == 1) {
 			printf("%d %d  ", majory + 1, minory + 1);
 		} else {
@@ -228,6 +249,9 @@ void drawBoard(Game g) {
 		printf("|                         |\n");
 	}
 
+	/*
+	** x coordinates
+	*/
 	printf("| @  a b c  a b c  a b c  |\n");
 	printf("|______a______b______c____|\n");
 }
@@ -239,10 +263,12 @@ void drawExplosion(Coord c, Coord lc, Game g, char turn) {
 	int Mx, My, mx, my, Lx, Ly, lx, ly;
 	float x, y, maxframe;
 	float frame = 0;
+
 	/*
 	** text buffers
 	*/
 	char clrbuf[16][27], buf[16][27];
+
 	/*
 	** char arrays containing the decoration to make
 	** it easier to copy
@@ -328,10 +354,16 @@ void drawExplosion(Coord c, Coord lc, Game g, char turn) {
 	x = Lx - lx;
 	y = Ly - ly;
 
+	/*
+	** three cheers for pythagoras!
+	*/
 	maxframe = (int)sqrt(fabsf(x * x) + fabsf(y * y));
 
 	/*
 	** create the buffer
+	** because of rounding / integer truncation part two which would have
+	** been the line being cleared, was never added as the math would not
+	** allow for the line to be cleared perfectly the second go
 	*/
 	for (My = 0; My < 16; My++) {
 	for (Mx = 0; Mx < 27; Mx++) {
@@ -390,14 +422,13 @@ void drawExplosion(Coord c, Coord lc, Game g, char turn) {
 		}
 
 		/*
-		** draw buffer
+		** draw buffer along wiht clearing the screen
 		*/
-#		ifdef WINDOWS
-		printf("\n\n\n\n");
-#		else
-		printf("%c[2J%c[;H\n", (char)27, (char)27);
-#		endif
+		printf(CLEARSCREEN);
 
+		/*
+		** quick title bar so the animation is in line with the board
+		*/
 		printf("Computer is playing...\n");
 
 		for (My = 0; My < 16; My++) {
@@ -414,14 +445,10 @@ void drawExplosion(Coord c, Coord lc, Game g, char turn) {
 		frame++;
 	}
 
-//	printf("lc: %d %d %d %d c: %d %d %d %d\n", lc.Mx, lc.My, lc.mx, lc.my, c.Mx, c.My, c.mx, c.my);
-//	printf("l: %d %d L: %d %d n: %d %d\n", lx, ly, Lx, Ly, x, y);
-
-#	ifdef WINDOWS
-	printf("\n\n\n\n");
-#	else
-	printf("%c[2J%c[;H\n", (char)27, (char)27);
-#	endif
+	/*
+	** clear the screen when finished
+	*/
+	printf(CLEARSCREEN);
 }
 
 /*
@@ -449,6 +476,10 @@ void defsleep(int msec) {
 #	endif
 }
 
+/*
+** initialise all the values of the game so the we dont get
+** undefined values being used accidentally
+*/
 void initBoard(Game *g) {
 	int majorx, majory, minorx, minory, i;
 
@@ -468,10 +499,16 @@ void initBoard(Game *g) {
 	}
 }
 
+/*
+** plays a move into the board
+*/
 void playToBoard(Coord c, Game *g, char tile) {
 	g->board[c.Mx][c.My].Minor[c.mx][c.my] = tile;
 }
 
+/*
+** fills a major with one character
+*/
 void fillMajor(Major *m, char c) {
 	int minorx, minory;
 
@@ -481,6 +518,9 @@ void fillMajor(Major *m, char c) {
 	}}
 }
 
+/*
+** fills all parts of a coord with a number
+*/
 void emptyCoord(Coord *c, int replace) {
 	c->Mx = replace;
 	c->My = replace;
@@ -488,6 +528,9 @@ void emptyCoord(Coord *c, int replace) {
 	c->my = replace;
 }
 
+/*
+** adds a played move to the boards record of moves
+*/
 void recordMove(Coord c, Game *g, char strat) {
 	int recordindex = ((g->turn - 1) * 4) + 1;
 
@@ -498,19 +541,29 @@ void recordMove(Coord c, Game *g, char strat) {
 	g->moverecord[0] = strat;
 }
 
+/*
+** replays a match by playing the moves found in the move record
+*/
 void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 	Coord move;
 
-	int i, turn;
+	int i;
 
 	char c;
 
+	/*
+	** find out how many moves have been played
+	*/
 	for (i = 1; i <= 81 * 4; i += 4) {
 		if (g->moverecord[i] != BOARDEMPTY) {
 			g->turn++;
 		}
 	}
 
+	/*
+	** swap the last moves if it is an odd number of turns so we have the
+	** correct last moves
+	*/
 	if (!(g->turn % 2)) {
 		c = p1;
 		p1 = p2;
@@ -521,6 +574,9 @@ void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 		*m2 = move;
 	}
 
+	/*
+	** read the moves and play them to the board
+	*/
 	for (i = 1; i < ((g->turn - 1) * 4); i += 4) {
 		m1->Mx = (int)g->moverecord[i] - 97;
 		m1->My = (int)g->moverecord[i + 1] - 49;
@@ -535,6 +591,9 @@ void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 			emptyCoord(m1, -1);
 		}
 
+		/*
+		** swap turns
+		*/
 		c = p1;
 		p1 = p2;
 		p2 = c;
@@ -545,21 +604,32 @@ void playRecordToBoard(Game *g, Coord *m1, Coord *m2, char p1, char p2) {
 	}
 }
 
+/*
+** writes a save to the database
+*/
 void addSave(int slot, Game g) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int rc, saveno;
+	int rc = 0;
 
 	char *sql;
 
 	sqlite3_open(DBNAME, &db);
 
+	/*
+	** sqlite open returns a null pointer if the connection attempt fails
+	** not the most helpful since sqlite can also create a temporary database
+	** when one is not found
+	*/
 	if (db == NULL) {
 		printf("\nFailed to open saves database!\n");
 		waitForInput();
 		return;
 	} else {
+		/*
+		** write save to table
+		*/
 		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 
 		if (slotFull(slot)) {
@@ -580,19 +650,29 @@ void addSave(int slot, Game g) {
 			rc = sqlite3_step(stmt);
 		}
 
+		/*
+		** so we dont leak memory
+		*/
 		sqlite3_finalize(stmt);
 
 		sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
 
+		/*
+		** so we dont hit the files open limit
+		*/
 		sqlite3_close(db);
 	}
 }
 
+/*
+** read a save from the database
+*/
 void loadSave(int slot, Game *g) {
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
-	int rc, i;
+	int i;
+	int rc = 0;
 
 	char *record;
 
@@ -600,6 +680,9 @@ void loadSave(int slot, Game *g) {
 
 	sqlite3_open(DBNAME, &db);
 
+	/*
+	** check for a successful connection
+	*/
 	if (db == NULL) {
 		printf("\nFailed to open saves database!\n");
 		waitForInput();
@@ -611,6 +694,9 @@ void loadSave(int slot, Game *g) {
 	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, slot);
 
+	/*
+	** execute sql statement until finished
+	*/
 	while (rc != SQLITE_DONE) {
 		rc = sqlite3_step(stmt);
 		if (rc == SQLITE_ROW) {

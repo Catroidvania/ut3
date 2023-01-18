@@ -110,10 +110,10 @@ having to edit the Makefiles themselves:
 | CC       | compiler to use | gcc |
 | MAKE     | make command to use | make |
 | WINDOWS  | compile for windows (is true if any value is assigned) | (empty for false value) |
-| GFLAGS   | default compiler flags for all Makefiles | -Os -g -std=c99 |
-| SFLAGS   | flags for compiling files in src | -Os -g -std=c99 |
-| DFLAGS   | flags for compiling files in deps | -Os -g -std=c99 |
-| BFLAGS   | flags for linking objects in build | -Os -g -std=c99 |
+| GFLAGS   | default compiler flags for all Makefiles | -Os -std=c99 |
+| SFLAGS   | flags for compiling files in src | -Os -std=c99 |
+| DFLAGS   | flags for compiling files in deps | -Os -std=c99 |
+| BFLAGS   | flags for linking objects in build | -Os -std=c99 |
 
 none of these are required to be provided except for any value to `WINDOWS`
 
